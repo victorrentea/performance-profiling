@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/loan-comments/1"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "body": "LGTM!!"
+      },
+      {
+        "body": "PR rejected!"
+      }
+    ],
+    "fixedDelayMilliseconds": 40
+  }
+}

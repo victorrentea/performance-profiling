@@ -1,0 +1,11 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/get-one/.*"
+  },
+  "response": {
+    "status": 200,
+    "body": "one",
+    "fixedDelayMilliseconds": 5
+  }
+}

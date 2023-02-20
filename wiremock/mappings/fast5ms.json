@@ -1,0 +1,11 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/fast5ms.*"
+  },
+  "response": {
+    "status": 200,
+    "body": "fast5ms",
+    "fixedDelayMilliseconds": 5
+  }
+}
