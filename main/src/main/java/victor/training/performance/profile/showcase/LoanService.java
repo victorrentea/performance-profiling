@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-//@Transactional
+@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -31,7 +31,7 @@ public class LoanService {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
     List<CommentDto> comments = commentsApiClient.getCommentsForLoanApplication(id); // takes ±40ms
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-//    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: " + loanApplication);
     return dto;
   }
 

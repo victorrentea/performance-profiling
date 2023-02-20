@@ -40,11 +40,14 @@ public class GDPRFilterAspect {
       return result;
     }
 
+
     // TODO move these pre-checks BEFORE the expensive network call
     if (!result.getClass().getPackageName().startsWith("victor")) {
       return result;
     }
     List<Field> fieldsToClear = annotatedFields(result);
+    if (fieldsToClear.isEmpty()) return result;
+
 
     clearFields(result, userJurisdiction, fieldsToClear);
     return result;
