@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
-public class PerformanceApp {
+public class ProfiledApp {
     private static final long t0 = System.currentTimeMillis();
 
     @Bean
@@ -37,6 +37,6 @@ public class PerformanceApp {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(PerformanceApp.class, args);
+        SpringApplication.run(ProfiledApp.class, args);
     }
 }
