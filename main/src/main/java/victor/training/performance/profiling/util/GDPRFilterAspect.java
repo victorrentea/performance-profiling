@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase.util;
+package victor.training.performance.profiling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

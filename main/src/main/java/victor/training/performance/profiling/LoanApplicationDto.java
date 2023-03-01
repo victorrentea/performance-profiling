@@ -1,7 +1,7 @@
-package victor.training.performance.profile.showcase;
+package victor.training.performance.profiling;
 
 import lombok.Value;
-import victor.training.performance.profile.showcase.LoanApplication.Status;
+import victor.training.performance.profiling.LoanApplication.Status;
 
 import java.util.List;
 

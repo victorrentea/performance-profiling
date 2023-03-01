@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase.util;
+package victor.training.performance.profiling.util;
 
 import org.hibernate.EmptyInterceptor;
 import org.slf4j.Logger;

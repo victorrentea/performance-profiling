@@ -15,7 +15,7 @@ public class LockContention extends Simulation {
     String host = "http://localhost:8080";
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
-                    .get("/profile/showcase/1/status"))
+                    .get("/loan/1/status"))
             .injectClosed(constantConcurrentUsers(10).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));

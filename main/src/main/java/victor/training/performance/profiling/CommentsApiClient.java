@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase;
+package victor.training.performance.profiling;
 
 import io.micrometer.core.annotation.Timed;
 import org.springframework.cloud.openfeign.FeignClient;

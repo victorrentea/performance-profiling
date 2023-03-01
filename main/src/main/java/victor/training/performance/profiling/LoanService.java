@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase;
+package victor.training.performance.profiling;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,8 +6,8 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import victor.training.performance.profile.showcase.LoanApplication.ApprovalStep;
-import victor.training.performance.profile.showcase.LoanApplication.Status;
+import victor.training.performance.profiling.LoanApplication.ApprovalStep;
+import victor.training.performance.profiling.LoanApplication.Status;
 
 import java.util.ArrayList;
 import java.util.List;

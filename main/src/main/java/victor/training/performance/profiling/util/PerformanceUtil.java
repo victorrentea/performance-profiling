@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase.util;
+package victor.training.performance.profiling.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;

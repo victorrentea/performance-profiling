@@ -1,4 +1,4 @@
-package victor.training.performance.profile.showcase;
+package victor.training.performance.profiling;
 
 import lombok.Data;
 

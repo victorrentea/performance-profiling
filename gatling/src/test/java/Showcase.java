@@ -15,7 +15,7 @@ public class Showcase extends Simulation {
     String host = "http://localhost:8080";
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
-                    .get("/profile/showcase/1"))
+                    .get("/loan/1"))
             .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));

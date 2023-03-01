@@ -19,12 +19,12 @@ public class HotMethod extends Simulation {
     String host = "http://localhost:8080";
 
     setUp(scenario(getClass().getSimpleName())
-            .exec(http("less data 29.999")
-                    .post("/profile/showcase/payments/delta")
+            .exec(http("less data (29.999)")
+                    .post("/payments/delta")
                     .header("Content-Type", "application/json")
                     .body(StringBody(generateData(29_999))))
-            .exec(http("more data 40.000")
-                    .post("/profile/showcase/payments/delta")
+            .exec(http("more data (40.000)")
+                    .post("/payments/delta")
                     .header("Content-Type","application/json")
                     .body(StringBody(generateData(40_000))))
             .injectClosed(constantConcurrentUsers(8).during(ofSeconds(8))))
