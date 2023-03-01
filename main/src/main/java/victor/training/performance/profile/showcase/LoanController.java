@@ -1,7 +1,9 @@
 package victor.training.performance.profile.showcase;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import victor.training.performance.profile.showcase.LoanApplication.Status;
 
@@ -21,6 +23,7 @@ public class LoanController {
 
    @GetMapping("{id}/status")
    public Status getStatus(@PathVariable Long id) {
+      meterRegistry.counter("statusfee").increment(0.01);
       return loanService.getLoanApplicationStatusForClient(id);
    }
 
@@ -29,5 +32,8 @@ public class LoanController {
       return loanService.getRecentLoanStatusQueried();
    }
 
+
+   @Autowired
+   private MeterRegistry meterRegistry;
 }
 

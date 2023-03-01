@@ -36,7 +36,7 @@ public class LoanService {
     return dto;
   }
 
-//  @Transactional
+  @Transactional
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list

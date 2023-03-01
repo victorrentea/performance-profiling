@@ -10,3 +10,19 @@ services:
     ports:
       - "5432:5432"
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    volumes:
+      - .:/etc/prometheus
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+
+
