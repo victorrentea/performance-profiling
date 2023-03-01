@@ -2,6 +2,7 @@ package victor.training.performance.profile.showcase;
 
 import lombok.Value;
 import victor.training.performance.profile.showcase.LoanApplication.Status;
+import victor.training.performance.profile.showcase.util.GDPRFilterAspect.VisibleFor;
 
 import java.util.List;
 

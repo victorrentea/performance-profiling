@@ -14,7 +14,6 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -22,19 +21,22 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  @Transactional // ai nevoie aici
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
+//  @Transactional  NU ai nevoie de ACID daca citesti !!
   public LoanApplicationDto getLoanApplication(Long id) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
     List<CommentDto> comments = commentsApiClient.getCommentsForLoanApplication(id); // takes ±40ms
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id); // #solutia 1 la JDBC starvation
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication);
     return dto;
   }
 
+//  @Transactional
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list

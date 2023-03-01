@@ -32,21 +32,26 @@ public class GDPRFilterAspect {
       return result;
     }
 
-    String userJurisdiction;
-    try {
-      userJurisdiction = new RestTemplate().getForObject("http://localhost:9999/fast20ms", String.class);
-    } catch (RestClientException e) {
-      log.debug("WARN: No jurisdiction");
-      return result;
-    }
-
-
     // TODO move these pre-checks BEFORE the expensive network call
     if (!result.getClass().getPackageName().startsWith("victor")) {
       return result;
     }
     List<Field> fieldsToClear = annotatedFields(result);
     if (fieldsToClear.isEmpty()) return result;
+
+
+    // Nivelul1 apel de retea doar daca e strict nevoie
+    // Nivelul2 sa nu fac niciodata apel ci sa iau informatiile alea din
+      // tokenul JWT cu care a venit la app dintr-un 'claim' de acolo
+    String userJurisdiction;
+    try {
+      userJurisdiction = new RestTemplate().getForObject(
+              "http://localhost:9999/fast20ms", String.class);
+    } catch (RestClientException e) {
+      log.debug("WARN: No jurisdiction");
+      return result;
+    }
+
 
 
     clearFields(result, userJurisdiction, fieldsToClear);

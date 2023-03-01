@@ -3,6 +3,7 @@ package victor.training.performance.profile.showcase;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -10,7 +11,9 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data
+@ToString
+@Setter// consider encapsulating changes
+@Getter
 @Entity
 public class LoanApplication {
   enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
@@ -18,8 +21,10 @@ public class LoanApplication {
   @Id
   private Long id;
   private String title;
+  @ToString.Exclude
   @ElementCollection
   private List<ApprovalStep> steps = new ArrayList<>();
+  @ToString.Exclude
   @ManyToMany
   private List<LoanClient> beneficiaries = new ArrayList<>();
 
