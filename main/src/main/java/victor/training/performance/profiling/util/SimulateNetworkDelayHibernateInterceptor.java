@@ -11,12 +11,11 @@ import org.springframework.stereotype.Component;
 public class SimulateNetworkDelayHibernateInterceptor extends EmptyInterceptor {
 
   private static final Logger log = LoggerFactory.getLogger(SimulateNetworkDelayHibernateInterceptor.class);
-  public static int MILLIS = 0;
+  public static int MILLIS = 3;
 
   @EventListener(ApplicationStartedEvent.class)
   public void setNetworkDelay() {
-    log.info("Adding 5ms delay/sql, to simulate real life");
-    MILLIS = 3;
+    log.info("Adding {}}ms delay/sql, to simulate real life", MILLIS);
   }
 
   @Override
