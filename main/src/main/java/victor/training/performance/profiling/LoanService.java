@@ -18,14 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
-  private final AuditRepo auditRepo;
   private final CommentsApiClient commentsApiClient;
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
-
-  public void saveLoanApplication(String title) {
-    Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
-    auditRepo.save(new Audit("Loan created: " + id));
-  }
 
   public LoanApplicationDto getLoanApplication(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
@@ -34,6 +27,15 @@ public class LoanService {
     log.trace("Loan app: " + loanApplication);
     return dto;
   }
+
+  private final AuditRepo auditRepo;
+
+  public void saveLoanApplication(String title) {
+    Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
+    auditRepo.save(new Audit("Loan created: " + id));
+  }
+
+  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();

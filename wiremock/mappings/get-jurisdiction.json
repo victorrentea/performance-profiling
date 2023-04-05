@@ -1,11 +1,11 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/fast20ms"
+    "urlPathPattern": "/jurisdiction"
   },
   "response": {
     "status": 200,
-    "body": "fast20ms",
+    "body": "ADMIN",
     "fixedDelayMilliseconds": 20
   }
 }

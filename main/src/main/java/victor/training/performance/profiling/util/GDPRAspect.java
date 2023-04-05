@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Component
 @Aspect
-public class GDPRFilterAspect {
+public class GDPRAspect {
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface VisibleFor {
@@ -31,25 +30,24 @@ public class GDPRFilterAspect {
     if (result == null) {
       return result;
     }
+    if (!result.getClass().getPackageName().startsWith("victor")) {
+      return result;
+    }
 
     String userJurisdiction;
     try {
-      userJurisdiction = new RestTemplate().getForObject("http://localhost:9999/fast20ms", String.class);
+      userJurisdiction = new RestTemplate().getForObject("http://localhost:9999/jurisdiction", String.class);
     } catch (RestClientException e) {
       log.debug("WARN: No jurisdiction");
       return result;
     }
 
-
-    // TODO move these pre-checks BEFORE the expensive network call
-    if (!result.getClass().getPackageName().startsWith("victor")) {
-      return result;
+    List<Field> annotatedFields = getAnnotatedFields(result);
+    if (annotatedFields.isEmpty()) {
+      return result; // TODO move this pre-check BEFORE the expensive network call
     }
-    List<Field> fieldsToClear = annotatedFields(result);
-    if (fieldsToClear.isEmpty()) return result;
 
-
-    clearFields(result, userJurisdiction, fieldsToClear);
+    clearFields(result, userJurisdiction, annotatedFields);
     return result;
   }
 
@@ -62,16 +60,15 @@ public class GDPRFilterAspect {
     }
   }
 
-  @NotNull
-  private static List<Field> annotatedFields(Object result) {
-    List<Field> fieldsToClear = new ArrayList<>();
+  private static List<Field> getAnnotatedFields(Object result) {
+    List<Field> annotatedFields = new ArrayList<>();
     for (Field field : result.getClass().getDeclaredFields()) {
       field.setAccessible(true);
       VisibleFor annot = field.getAnnotation(VisibleFor.class);
       if (annot != null) {
-        fieldsToClear.add(field);
+        annotatedFields.add(field);
       }
     }
-    return fieldsToClear;
+    return annotatedFields;
   }
 }

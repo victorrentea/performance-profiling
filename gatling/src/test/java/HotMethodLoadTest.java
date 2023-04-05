@@ -10,9 +10,9 @@ import static io.gatling.javaapi.http.HttpDsl.http;
 import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
 
-public class HotMethod extends Simulation {
+public class HotMethodLoadTest extends Simulation {
   public static void main(String[] args) {
-    GatlingEngine.startClass(HotMethod.class);
+    GatlingEngine.startClass(HotMethodLoadTest.class);
   }
 
   {

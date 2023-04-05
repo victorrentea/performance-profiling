@@ -10,33 +10,37 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
-public class ProfiledApp {
-    private static final long t0 = System.currentTimeMillis();
+public class ProfiledApp implements WebMvcConfigurer {
+  private static final long t0 = System.currentTimeMillis();
 
-    @Bean
-    public RestTemplate rest() {
-        return new RestTemplate();
-        // it is critical to define RestTemplate as a @Bean rather than instantiating it at usage point,
-        // to allow Apache Sleuth to hack it to send its TraceID over HTTP request headers
-    }
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
 
-    @Bean // enables the use of @Timed on methods
-    public TimedAspect timedAspect(MeterRegistry meterRegistry) {
-        return new TimedAspect(meterRegistry);
-    }
+  @Bean // enables the use of @Timed
+  public TimedAspect timedAspect(MeterRegistry meterRegistry) {
+    return new TimedAspect(meterRegistry);
+  }
 
-    @EventListener
-    public void onStart(ApplicationReadyEvent event) {
-        long t1 = System.currentTimeMillis();
+  @EventListener(ApplicationReadyEvent.class)
+  public void onStart() {
+    log.info("🌟🌟🌟🌟🌟🌟 PerformanceApp Started in {} seconds 🌟🌟🌟🌟🌟🌟",
+            (System.currentTimeMillis() - t0) / 1000);
+  }
 
-        log.info("🌟🌟🌟🌟🌟🌟 PerformanceApp Started in {} seconds 🌟🌟🌟🌟🌟🌟", (t1-t0)/1000);
-    }
+  @Override
+  public void addViewControllers(ViewControllerRegistry registry) {
+    registry.addRedirectViewController("/", "/loan/1");
+  }
 
-    public static void main(String[] args) {
-        SpringApplication.run(ProfiledApp.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(ProfiledApp.class, args);
+  }
 }
