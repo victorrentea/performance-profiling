@@ -2,8 +2,6 @@ package victor.training.performance.profiling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,7 +19,7 @@ public class AutoDeleteGlowrootDB {
 
 //  @EventListener(ApplicationStartedEvent.class)
   @PreDestroy
-  public void onStartup() throws IOException {
+  public void atEnd() throws IOException {
     // otherwise Glowroot preserves its data over a restart
     String glowrootPath = ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
             .filter(jvmArg -> jvmArg.startsWith("-javaagent:") && jvmArg.endsWith("glowroot.jar"))
