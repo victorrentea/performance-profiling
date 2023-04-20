@@ -24,7 +24,7 @@ Unzip the dist and copy the path to `glowroot.jar` inside.
 
 Add Glowroot as a 'VM option' to your application: `-javaagent:/path/to/glowroot.jar` in the run configuration
 
-You must use <= Java 11
+You must use <= Java 11 for Glowroot to work.
 When you run the application, you can access the Glowroot UI at http://localhost:4000
 ![img.png](art/glowroot.png)
 
