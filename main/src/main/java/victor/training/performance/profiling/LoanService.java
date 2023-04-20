@@ -19,6 +19,7 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+  @Transactional(readOnly = true)
   public LoanApplicationDto getLoanApplication(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id); // 15%  3-4ms
     List<CommentDto> comments = commentsApiClient.getCommentsForLoanApplication(id); // 85% takes ±40ms
