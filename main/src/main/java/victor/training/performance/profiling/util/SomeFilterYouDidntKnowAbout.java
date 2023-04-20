@@ -13,6 +13,7 @@ public class SomeFilterYouDidntKnowAbout implements Filter {
 
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
       HttpServletRequest httpRequest = (HttpServletRequest) request;
+//      PerformanceUtil.sleepMillis(100);
       if (httpRequest.getRequestURI().contains("leak8")) {
          log.debug("doFilter stuff");
          chain.doFilter(request, response);

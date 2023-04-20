@@ -18,13 +18,12 @@ import java.util.List;
 @Component
 @Aspect
 public class GDPRAspect {
-
   @Retention(RetentionPolicy.RUNTIME)
   public @interface VisibleFor {
     String value();
   }
 
-  @Around("@within(org.springframework.web.bind.annotation.RestController))")
+  @Around("@within(org.springframework.web.bind.annotation.RestController))") // = all methods in a class annotated with @RestController
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
     Object result = pjp.proceed();
     if (result == null) {
@@ -32,6 +31,11 @@ public class GDPRAspect {
     }
     if (!result.getClass().getPackageName().startsWith("victor")) {
       return result;
+    }
+
+    List<Field> annotatedFields = getAnnotatedFields(result);
+    if (annotatedFields.isEmpty()) {
+      return result; // TODO move this pre-check BEFORE the expensive network call
     }
 
     String userJurisdiction;
@@ -42,10 +46,6 @@ public class GDPRAspect {
       return result;
     }
 
-    List<Field> annotatedFields = getAnnotatedFields(result);
-    if (annotatedFields.isEmpty()) {
-      return result; // TODO move this pre-check BEFORE the expensive network call
-    }
 
     clearFields(result, userJurisdiction, annotatedFields);
     return result;
