@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -25,9 +23,10 @@ public class PaymentsController {
 
   @PostMapping("payments/delta")
   public int getUnprocessedPayments(@RequestBody List<Long> newPaymentIds) {
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // 29.999
-    List<Long> dbPaymentIds = paymentRepo.allIds(); // 30.000
-    hashSet.removeAll(dbPaymentIds); // should work in O(N) as set.remove() is O(1)
+    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); //1: 29.999
+    List<Long> dbPaymentIds = paymentRepo.allIds(); //2:  30.000
+//    hashSet.removeAll(dbPaymentIds); //3: 95% should work in O(N) as set.remove() is O(1)
+    hashSet.removeAll(new HashSet<>(dbPaymentIds)); //3: 95% should work in O(N) as set.remove() is O(1)
     return hashSet.size();
   }
 
