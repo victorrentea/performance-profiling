@@ -38,15 +38,19 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  @Transactional
+  public  Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    synchronized(this) {
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
     return loanApplication.getCurrentStatus();
   }
 
   public List<Long> getRecentLoanStatusQueried() {
+//    loanApplicationRepo// acq CONN
     return new ArrayList<>(recentLoanStatusQueried);
   }
 
