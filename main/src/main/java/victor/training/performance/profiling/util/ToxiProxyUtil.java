@@ -1,4 +1,4 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.util;
 
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
@@ -8,10 +8,10 @@ import java.io.IOException;
 
 public class ToxiProxyUtil {
   public static void main(String[] args) throws IOException {
-    configureToxiProxy();
+    delayTraficToPostgres();
   }
 
-  public static void configureToxiProxy() throws IOException {
+  public static void delayTraficToPostgres() throws IOException {
     // for this to work, please install ToxiProxy locally: https://github.com/shopify/toxiproxy#usage
     ToxiproxyClient client = new ToxiproxyClient("localhost", 8474);
 

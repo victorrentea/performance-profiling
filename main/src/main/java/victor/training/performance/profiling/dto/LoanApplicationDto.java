@@ -1,7 +1,8 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.dto;
 
 import lombok.Value;
-import victor.training.performance.profiling.LoanApplication.Status;
+import victor.training.performance.profiling.entity.LoanApplication;
+import victor.training.performance.profiling.entity.LoanApplication.Status;
 
 import java.util.List;
 

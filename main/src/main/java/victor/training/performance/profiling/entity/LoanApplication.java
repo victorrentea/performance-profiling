@@ -1,4 +1,4 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.entity;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.toList;
 @Data
 @Entity
 public class LoanApplication {
-  enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
+  public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
 
   @Id
   private Long id;

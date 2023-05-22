@@ -6,8 +6,14 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import victor.training.performance.profiling.LoanApplication.ApprovalStep;
-import victor.training.performance.profiling.LoanApplication.Status;
+import victor.training.performance.profiling.dto.CommentDto;
+import victor.training.performance.profiling.dto.LoanApplicationDto;
+import victor.training.performance.profiling.entity.Audit;
+import victor.training.performance.profiling.entity.LoanApplication;
+import victor.training.performance.profiling.entity.LoanApplication.ApprovalStep;
+import victor.training.performance.profiling.entity.LoanApplication.Status;
+import victor.training.performance.profiling.repo.AuditRepo;
+import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.util.ArrayList;
 import java.util.List;

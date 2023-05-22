@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-import victor.training.performance.profiling.LoanApplication.Status;
+import victor.training.performance.profiling.dto.LoanApplicationDto;
+import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class LoanController {
   }
 
   @GetMapping("loan/{id}/status")
-  public Status getStatus(@PathVariable Long id) {
+  public LoanApplication.Status getStatus(@PathVariable Long id) {
     return loanService.getLoanApplicationStatusForClient(id);
   }
 

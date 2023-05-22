@@ -1,9 +1,9 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.util;
 
 import java.io.File;
 import java.sql.SQLException;
 
-public class StartDatabase {
+public class StartDatabaseInMem {
 	public static void main(String[] args) throws SQLException {
 		System.out.println("Started DB...");
 		System.out.println("Connecting to 'jdbc:h2:tcp://localhost:9092/~/test' will auto-create a database file 'test.mv.db' in user home (~)...");

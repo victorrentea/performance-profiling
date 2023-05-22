@@ -1,4 +1,4 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.dto;
 
 import lombok.Data;
 import victor.training.performance.profiling.util.GDPRAspect.VisibleFor;
