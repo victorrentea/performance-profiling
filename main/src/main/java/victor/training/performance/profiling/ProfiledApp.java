@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import victor.training.performance.profiling.util.ToxiProxyUtil;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 
 @Slf4j
@@ -22,7 +23,7 @@ import java.io.IOException;
 public class ProfiledApp implements WebMvcConfigurer {
   private static final long t0 = System.currentTimeMillis();
 
-  @Bean
+  @Bean // instrumented by Micrometer and Sleuth
   public RestTemplate restTemplate() {
     return new RestTemplate();
   }
