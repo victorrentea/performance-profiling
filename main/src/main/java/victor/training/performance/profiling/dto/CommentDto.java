@@ -1,10 +1,11 @@
 package victor.training.performance.profiling.dto;
 
 import lombok.Data;
+import lombok.Value;
 import victor.training.performance.profiling.util.GDPRAspect.VisibleFor;
 
-@Data
+@Value
 public class CommentDto {
-  private String body;
-  private String email;
+  String body;
+  String email;
 }
