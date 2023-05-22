@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
+//@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -30,6 +30,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));

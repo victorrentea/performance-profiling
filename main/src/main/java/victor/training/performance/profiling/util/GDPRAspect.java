@@ -1,9 +1,11 @@
 package victor.training.performance.profiling.util;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -14,10 +16,12 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Slf4j
 @Component
 @Aspect
 public class GDPRAspect {
+  private final RestTemplate restTemplate;
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface VisibleFor {
@@ -28,27 +32,31 @@ public class GDPRAspect {
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
     Object result = pjp.proceed();
     if (result == null) {
-      return result;
+      return null;
     }
     if (!result.getClass().getPackageName().startsWith("victor")) {
       return result;
     }
 
-    String userJurisdiction;
-    try {
-      userJurisdiction = new RestTemplate().getForObject("http://localhost:9999/jurisdiction", String.class);
-    } catch (RestClientException e) {
-      log.debug("WARN: No jurisdiction");
-      return result;
-    }
+    String userJurisdiction = fetchJurisdiction(); // network call
 
     List<Field> annotatedFields = getAnnotatedFields(result);
     if (annotatedFields.isEmpty()) {
       return result; // TODO move this pre-check BEFORE the expensive network call
     }
 
+
     clearFields(result, userJurisdiction, annotatedFields);
     return result;
+  }
+
+  @Nullable
+  private String fetchJurisdiction() {
+    try {
+      return restTemplate.getForObject("http://localhost:9999/jurisdiction", String.class);
+    } catch (RestClientException e) {
+      throw new RuntimeException("No Jurisdiction", e);
+    }
   }
 
   private static void clearFields(Object result, String userJurisdiction, List<Field> fieldsToClear) throws IllegalAccessException {
