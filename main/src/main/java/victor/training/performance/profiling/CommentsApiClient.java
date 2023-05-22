@@ -9,10 +9,10 @@ import victor.training.performance.profiling.dto.CommentDto;
 
 import java.util.List;
 
-@Timed
 @FeignClient(value = "loan-comments", url = "http://localhost:9999/")
 public interface CommentsApiClient {
 
+  @Timed
   @RequestMapping(method = RequestMethod.GET, value = "loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable Long id);
 }
