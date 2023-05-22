@@ -4,9 +4,14 @@ services:
   postgres:
     image: postgres:11
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
-
+#  toxiproxy:
+#    image: ghcr.io/shopify/toxiproxy
+#    ports:
+#      - "55432:55432"
+#      - "8474:8474"
+#    network_mode: host

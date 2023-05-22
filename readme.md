@@ -11,7 +11,6 @@ Make sure you use option (A) in the application.properties file.
 If you have a Docker Desktop installed on your machine:
 - Start Postgres using the `docker/docker-compose.yml`
 - Use option (B) in the application.properties file.
-(url = `jdbc:postgresql://localhost:5432/db`)
 
 ## WireMock Setup - simulate external API
 Run `StartWireMock.java` to start the WireMock server.

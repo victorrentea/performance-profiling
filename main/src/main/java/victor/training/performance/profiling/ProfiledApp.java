@@ -13,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.io.IOException;
+
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
@@ -40,7 +42,8 @@ public class ProfiledApp implements WebMvcConfigurer {
     registry.addRedirectViewController("/", "/loan/1");
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
+    ToxiProxyUtil.configureToxiProxy();
     SpringApplication.run(ProfiledApp.class, args);
   }
 }
