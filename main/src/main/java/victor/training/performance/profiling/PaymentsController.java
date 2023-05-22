@@ -29,9 +29,9 @@ public class PaymentsController {
 
   @PostMapping("payments/delta")
   public int getUnprocessedPayments(@RequestBody List<Long> newPaymentIds) {
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // 29.999
-    List<Long> dbPaymentIds = paymentRepo.allIds(); // 30.000
-    hashSet.removeAll(dbPaymentIds); // should work in O(N) as set.remove() is O(1)
+    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999
+    List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
+    hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 

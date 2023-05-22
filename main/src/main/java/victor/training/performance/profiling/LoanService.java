@@ -26,9 +26,9 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
-  public LoanApplicationDto getLoanApplication(Long id) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
-    List<CommentDto> comments = commentsApiClient.getCommentsForLoanApplication(id); // takes ±40ms
+  public LoanApplicationDto getLoanApplication(Long loanId) {
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;

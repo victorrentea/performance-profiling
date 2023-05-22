@@ -14,5 +14,5 @@ import java.util.List;
 public interface CommentsApiClient {
 
   @RequestMapping(method = RequestMethod.GET, value = "loan-comments/{id}")
-  List<CommentDto> getCommentsForLoanApplication(@PathVariable Long id);
+  List<CommentDto> fetchComments(@PathVariable Long id);
 }
