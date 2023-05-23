@@ -9,3 +9,11 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
+
+  wiremock:
+    image: wiremock/wiremock
+    volumes:
+      - .:/home/wiremock
+    command: --async-response-enabled=true
+    ports:
+      - "9999:8080"

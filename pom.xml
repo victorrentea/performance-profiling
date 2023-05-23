@@ -21,7 +21,6 @@
     </properties>
     <modules>
         <module>main</module>
-        <module>wiremock</module>
         <module>gatling</module>
     </modules>
 
