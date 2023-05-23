@@ -34,7 +34,7 @@ public class GatlingEngine {
     Gatling.fromMap(props.build());
 
     System.out.println("You can access Glowroot at http://localhost:4000");
-    System.out.println("Flamegraph🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web");
+    System.out.println("Flamegraph🔥🔥🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
   }
 
   private static void clearGlowrootData()  {
