@@ -9,9 +9,3 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
-#  toxiproxy:
-#    image: ghcr.io/shopify/toxiproxy
-#    ports:
-#      - "55432:55432"
-#      - "8474:8474"
-#    network_mode: host
