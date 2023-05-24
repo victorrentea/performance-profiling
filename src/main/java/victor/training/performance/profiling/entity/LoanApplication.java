@@ -1,6 +1,7 @@
 package victor.training.performance.profiling.entity;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -17,8 +18,10 @@ public class LoanApplication {
   private Long id;
   private String title;
   @ElementCollection
+  @ToString.Exclude
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
+  @ToString.Exclude
   private List<LoanClient> beneficiaries = new ArrayList<>();
 
   public Status getCurrentStatus() {

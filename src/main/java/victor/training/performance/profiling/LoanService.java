@@ -30,22 +30,22 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 20%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 80% takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication);
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
