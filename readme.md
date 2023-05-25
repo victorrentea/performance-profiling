@@ -16,6 +16,10 @@ If you have a Docker Desktop installed on your machine:
 Run `StartWireMock.java` to start the WireMock server.
 The stubs are in `wiremock/mappings` folder.
 
+## ToxiProxy 
+`/opt/homebrew/opt/toxiproxy/bin/toxiproxy-server`
+
+
 ## Glowroot
 Glowroot is a Java agent that collects performance metrics and traces.
 You can download it from glowroot.org.
