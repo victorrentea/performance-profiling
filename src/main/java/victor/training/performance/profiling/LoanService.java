@@ -82,9 +82,13 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-//  @Transactional
+  @Transactional
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
+    // aici: iti da Repo optional :)
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
+    // aici: iti de Repo un null < NU multumita package-info.java
+    // aici: Repo da exceptie daca nu e dupa ID
+//    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(id);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);

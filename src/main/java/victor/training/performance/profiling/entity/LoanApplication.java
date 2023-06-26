@@ -19,7 +19,7 @@ public class LoanApplication {
   @Id
   private Long id;
   private String title;
-  @ElementCollection
+  @ElementCollection// #1 NU O FACE (fetch = FetchType.EAGER) // Evita lazy-loadul. dar urat: oriunde vreodata vei lua vreun LoanApplication de la Hibernate -> +1 SELECT / +1 JOIN
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
   private List<LoanClient> beneficiaries = new ArrayList<>();
