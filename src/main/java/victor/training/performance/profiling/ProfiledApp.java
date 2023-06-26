@@ -45,7 +45,7 @@ public class ProfiledApp implements WebMvcConfigurer {
   }
 
   public static void main(String[] args) throws IOException {
-    ToxiProxyUtil.delayTraficToPostgres();
+//    ToxiProxyUtil.delayTraficToPostgres();
     SpringApplication.run(ProfiledApp.class, args);
   }
 }
