@@ -84,13 +84,13 @@ public class LoanService {
   // ce-o sa zice k8s? pod++ => daca o scalez orizontal, tre s-o mut in vreun redis/DB ceva...
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  @Transactional
+//  @Transactional
   public  Status getLoanApplicationStatusForClient(Long id) {
     // aici: iti da Repo optional :)
-    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
+//    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     // aici: iti de Repo un null < NU multumita package-info.java
     // aici: Repo da exceptie daca nu e dupa ID
-//    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
 
     // zona critica (cat mai MICA) ----
     synchronized (loanApplicationRepo) {
