@@ -98,7 +98,7 @@ public class LoanService {
     log.info("In threadul original");
     CompletableFuture.runAsync(() -> {
       log.info("Niste logica care a pierdut TraceID pentru ca a fost executata pe un thread pool ne-instrumentat de spring/DI");
-    });
+    }, executor); // acum se ocupa Thread Poolul springului sa propage automat TraceId catre noul thread
 
     // zona critica (cat mai MICA) ----
     synchronized (loanApplicationRepo) {
