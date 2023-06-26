@@ -80,18 +80,25 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
+  // nu ti-e rusine sa tii date cross-request intr-un camp de singleton!??
+  // ce-o sa zice k8s? pod++ => daca o scalez orizontal, tre s-o mut in vreun redis/DB ceva...
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   @Transactional
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  public  Status getLoanApplicationStatusForClient(Long id) {
     // aici: iti da Repo optional :)
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     // aici: iti de Repo un null < NU multumita package-info.java
     // aici: Repo da exceptie daca nu e dupa ID
 //    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+
+    // zona critica (cat mai MICA) ----
+    synchronized (loanApplicationRepo) {
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
+    // -----------
     return loanApplication.getCurrentStatus();
   }
 
