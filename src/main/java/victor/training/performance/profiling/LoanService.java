@@ -4,8 +4,10 @@ import io.micrometer.core.annotation.Timed;
 import kotlin.jvm.internal.SerializedIr;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -92,6 +95,11 @@ public class LoanService {
     // aici: Repo da exceptie daca nu e dupa ID
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
 
+    log.info("In threadul original");
+    CompletableFuture.runAsync(() -> {
+      log.info("Niste logica care a pierdut TraceID pentru ca a fost executata pe un thread pool ne-instrumentat de spring/DI");
+    });
+
     // zona critica (cat mai MICA) ----
     synchronized (loanApplicationRepo) {
       recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
@@ -102,7 +110,10 @@ public class LoanService {
     return loanApplication.getCurrentStatus();
   }
 
-//  @Transactional
+  @Autowired
+  private ThreadPoolTaskExecutor executor;
+
+  //  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
   }
