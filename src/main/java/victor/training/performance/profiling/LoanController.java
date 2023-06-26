@@ -9,6 +9,7 @@ import victor.training.performance.profiling.util.PerformanceUtil;
 
 import java.util.List;
 
+import static java.lang.System.currentTimeMillis;
 import static victor.training.performance.profiling.util.PerformanceUtil.sleepMillis;
 
 @Slf4j

@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -36,6 +37,7 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+  @Timed(percentiles = {.9,.99, .5}) // @Transactional @PreAuthorized...
   public LoanApplicationDto getLoanApplication(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
