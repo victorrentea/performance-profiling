@@ -53,8 +53,8 @@ public class LoanService {
 //  @Transactional(isolation = Isolation.SERIALIZABLE)
   @Timed(percentiles = {.9,.99, .5}) // @Transactional @PreAuthorized...
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 60%
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 37% takes ±40ms in prod =  SOAP/REST API call
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 15% DA, NU: 60%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //85% DA, NU: 37% takes ±40ms in prod =  SOAP/REST API call
     // niciodata nu faci API calls in metode @Transactional. de ce?
     //  1) oricum nu se tranzacteaza API call in sine (nu ajuta)
     //  2) performance hit: pe timpul API callului e blocata o tranzactie in DB pe 1/10 conn JDBC a
