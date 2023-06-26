@@ -1,11 +1,13 @@
 package victor.training.performance.profiling;
 
 import io.micrometer.core.annotation.Timed;
+import kotlin.jvm.internal.SerializedIr;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +23,8 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
 import javax.persistence.EntityManager;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,19 +32,32 @@ import java.util.List;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
-
-@Slf4j
+@Retention(RetentionPolicy.RUNTIME)
 @Service
-@Transactional
+@interface Facade {
+
+}
+
+//@Facade
+
+@Service
+@Slf4j
+//@Transactional // OK pt inceputul unei app daca ai putini useri pe app (pt 100 backoffishi)
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+  // de ce oare @Transactional pe GET
+//  @Transactional(isolation = Isolation.REPEATABLE_READ)
+//  @Transactional(isolation = Isolation.SERIALIZABLE)
   @Timed(percentiles = {.9,.99, .5}) // @Transactional @PreAuthorized...
   public LoanApplicationDto getLoanApplication(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod =  SOAP/REST API call
+    // niciodata nu faci API calls in metode @Transactional. de ce?
+    //  1) oricum nu se tranzacteaza API call in sine (nu ajuta)
+    //  2) performance hit: pe timpul API callului e blocata o tranzactie in DB pe 1/10 conn JDBC a
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
@@ -48,6 +65,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -55,6 +73,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+//  @Transactional
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
@@ -63,12 +82,14 @@ public class LoanService {
     return loanApplication.getCurrentStatus();
   }
 
+//  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
   }
 
   //<editor-fold desc="insert initial loans in database">
   @EventListener(ApplicationStartedEvent.class)
+//  @Transactional
   public void insertInitialData() {
     ApprovalStep step1 = new ApprovalStep().setName("Pre-Scan Client").setStatus(Status.APPROVED);
     ApprovalStep step2 = new ApprovalStep().setName("Credit Registry").setStatus(Status.DECLINED);
