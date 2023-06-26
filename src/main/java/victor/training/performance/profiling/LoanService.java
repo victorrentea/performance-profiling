@@ -53,15 +53,24 @@ public class LoanService {
 //  @Transactional(isolation = Isolation.SERIALIZABLE)
   @Timed(percentiles = {.9,.99, .5}) // @Transactional @PreAuthorized...
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod =  SOAP/REST API call
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 60%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 37% takes ±40ms in prod =  SOAP/REST API call
     // niciodata nu faci API calls in metode @Transactional. de ce?
     //  1) oricum nu se tranzacteaza API call in sine (nu ajuta)
     //  2) performance hit: pe timpul API callului e blocata o tranzactie in DB pe 1/10 conn JDBC a
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+
+//    if (log.isTraceEnabled()) { // Reject la PR: foloseste mustati ?!?!
+//      log.trace("Loan app: " + loanApplication);
+//    }
+    log.trace("Loan app: {}", loanApplication);// better, eviti toString
+//    Slf4j?
+
     return dto;
   }
+//    if (log.isTraceEnabled()) { // Reject la PR: foloseste mustati ?!?!
+//      log.trace("Loan app: {}", prettyJsonify(loanApplication));
+//    }
 
   private final AuditRepo auditRepo;
 

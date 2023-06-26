@@ -8,7 +8,10 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data
+@Data // periculos: toStringul generat de Lombok include si colectille pe care JPA le lazy-loadeaza cand faci log.trace("De tot rasu: " + entity);
+//Solutii:
+//1) @Getter @Setter ⭐️
+//2) @ToString.Exclude pe colectii
 @Entity
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}

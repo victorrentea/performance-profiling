@@ -22,6 +22,11 @@ public class LoanController {
   public LoanApplicationDto get(@PathVariable Long id) {
     return loanService.getLoanApplication(id);
   }
+  // unii jr/app banale intorc @Entity din Controller (mare greseala arch pt orice app nontrivala)
+//  @GetMapping("loan/{id}")
+//  public LoanApplication doamneFereste(@PathVariable Long id) {
+//    return loanService.getLoanApplication(id);
+//  }
 
   @PostMapping("loan/{title}")
   public void save(@PathVariable String title) {
