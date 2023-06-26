@@ -1,24 +1,12 @@
 # Workshop: Performance Profiling
 
-## Database Setup
-You have two options:
-#### A) Standalone H2
-Run `StartDatabase.java` to start the H2 database server. 
-Make sure you use option (A) in the application.properties file.
-(url = `jdbc:h2:tcp://localhost/~/test`)
-
-#### B) Postgres in Docker
+## Start Dockers
 If you have a Docker Desktop installed on your machine:
-- Start Postgres using the `docker/docker-compose.yml`
-- Use option (B) in the application.properties file.
-
-## WireMock Setup - simulate external API
-Run `StartWireMock.java` to start the WireMock server.
-The stubs are in `wiremock/mappings` folder.
+- Start Postgres + WireMock using the `docker/docker-compose.yml`
 
 ## Glowroot
 Glowroot is a Java agent that collects performance metrics and traces.
-You can download it from glowroot.org.
+You can download it from glowroot.org
 Unzip the dist and copy the path to `glowroot.jar` inside.
 
 Add Glowroot as a 'VM option' to your application: `-javaagent:/path/to/glowroot.jar` in the run configuration
