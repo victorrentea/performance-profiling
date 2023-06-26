@@ -1,32 +1,29 @@
 # Workshop: Performance Profiling
 
 ## Start Dockers
-If you have a Docker Desktop installed on your machine:
-- Start Postgres + WireMock using the `docker/docker-compose.yml`
+Launch `docker/docker-compose.yml` to start a Postgres and a WireMock emulating response from remote APIs  
 
-## Glowroot
+## Start the app with the Glowroot javaagent
 Glowroot is a Java agent that collects performance metrics and traces.
-You can download it from glowroot.org
-Unzip the dist and copy the path to `glowroot.jar` inside.
+You can download it from https://glowroot.org/
+Unzip the xyz-dist.zip and copy the path to `glowroot.jar` inside.
+Add Glowroot jar as a 'VM option' to your application's run configuration: `-javaagent:/path/to/glowroot.jar` 
 
-Add Glowroot as a 'VM option' to your application: `-javaagent:/path/to/glowroot.jar` in the run configuration
+Warning: You must use <= Java 11 for Glowroot to work.
+Start the `ProfiledApp` application and check Glowroot is started at http://localhost:4000
 
-You must use <= Java 11 for Glowroot to work.
-When you run the application, you can access the Glowroot UI at http://localhost:4000
+If ok, you should see someting like:
 ![img.png](art/glowroot.png)
 
-## Start the application
-Run `ProfiledApp.java` with the Glowroot agent.
-
 ## Run the load tests
-Run `LoadTest.java` and if successful, the generated HTML
-report should display a green bar like this:
+Run `LoadTest.java`.
+If successful, the generated HTML report should display a green bar like this:
 ![img.png](art/gatling.png)
 
 Note: We are using an artificial 'closed' load test model:
 (the number of users if fixed)
 
-## See the flamegraph
+## Inspect the flamegraph
 Go to http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
 
 ## Optimization steps
