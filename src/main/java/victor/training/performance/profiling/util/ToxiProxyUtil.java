@@ -13,6 +13,9 @@ public class ToxiProxyUtil {
 
   public static void delayTraficToPostgres() throws IOException {
     // for this to work, please install ToxiProxy locally: https://github.com/shopify/toxiproxy#usage
+    // eg on macos:
+    // - brew install toxiproxy
+    // - brew services start shopify/shopify/toxiproxy
     ToxiproxyClient client = new ToxiproxyClient("localhost", 8474);
 
     Proxy oldProxy = client.getProxyOrNull("toxi-proxy");
