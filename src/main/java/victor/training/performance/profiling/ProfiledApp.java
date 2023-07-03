@@ -12,6 +12,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import victor.training.performance.profiling.extra.ConfigureToxiproxy;
 
 import java.io.IOException;
 

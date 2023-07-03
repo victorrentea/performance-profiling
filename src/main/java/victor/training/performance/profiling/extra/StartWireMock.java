@@ -1,4 +1,4 @@
-package victor.training.performance.profiling;
+package victor.training.performance.profiling.extra;
 
 import com.github.tomakehurst.wiremock.standalone.WireMockServerRunner;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
