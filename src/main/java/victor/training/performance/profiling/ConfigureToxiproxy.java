@@ -1,4 +1,4 @@
-package victor.training.performance.profiling.util;
+package victor.training.performance.profiling;
 
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
@@ -6,7 +6,7 @@ import eu.rekawek.toxiproxy.model.ToxicDirection;
 
 import java.io.IOException;
 
-public class ToxiProxyUtil {
+public class ConfigureToxiproxy {
 
   public static final String PG_PROXY = "toxi-proxy";
 

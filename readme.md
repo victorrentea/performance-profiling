@@ -23,7 +23,7 @@ created by Hibernate.
 Emulate network latency by driving all DB traffic through a proxy delaying network packets. 
 - Install [ToxiProxy](https://github.com/Shopify/toxiproxy#1-installing-toxiproxy) to your local machine.
 - Check it's started on port 8474 - you should see a 404 page at [http://localhost:8474](http://localhost:8474) 
-- Start victor.training.performance.profiling.util.ToxiProxyUtil.main
+- Run `ConfigureToxiproxy`
 - Change DB Port in application properties to point to the proxy port (eg) 5432 -> 55432
 
 
