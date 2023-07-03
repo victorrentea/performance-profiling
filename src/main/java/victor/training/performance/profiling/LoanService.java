@@ -34,8 +34,8 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // move this line first for x-fun
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
@@ -78,9 +78,9 @@ public class LoanService {
   private final PaymentRepo paymentRepo;
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999
+    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
     List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
-    hashSet.removeAll(new HashSet<>(dbPaymentIds)); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 

@@ -109,6 +109,11 @@
             <version>2.33.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.gatling.highcharts</groupId>

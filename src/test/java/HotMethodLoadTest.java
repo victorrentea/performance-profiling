@@ -23,10 +23,10 @@ public class HotMethodLoadTest extends Simulation {
                     .post("/payments/delta")
                     .header("Content-Type", "application/json")
                     .body(StringBody(generateData(29_999))))
-            .exec(http("more data (40.000)")
+            .exec(http("more data (32.000)")
                     .post("/payments/delta")
                     .header("Content-Type","application/json")
-                    .body(StringBody(generateData(40_000))))
+                    .body(StringBody(generateData(32_000))))
             .injectClosed(constantConcurrentUsers(8).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));
