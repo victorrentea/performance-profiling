@@ -74,7 +74,7 @@ public class GatlingEngine {
       URI uri = URI.create("http://localhost:4000/backend/admin/delete-all-stored-data");
       HttpRequest postRequest = HttpRequest.newBuilder().POST(BodyPublishers.ofString("{}")).uri(uri).build();
       HttpClient.newHttpClient().send(postRequest, BodyHandlers.discarding());
-      System.out.println("Glowroot found at localhost:4000 -> cleared its data");
+      System.out.println("Glowroot found at localhost:4000 -> cleared past data");
     } catch (IOException | InterruptedException e) {
       System.out.println("WARN: Could not clear Glowroot data. not started on :4000?");
     }
