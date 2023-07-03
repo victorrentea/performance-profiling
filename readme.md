@@ -1,38 +1,58 @@
-# Workshop: Performance Profiling
+# Profiling with Java Flight Recorder
 
-## Database Setup
-You have two options:
+## Setup
+
+### Start a Database
+You can use an in-memory standalone H2 or a PostgreSQL in a Docker.
 #### A) Standalone H2
 Run `StartDatabase.java` to start the H2 database server. 
-Make sure you use option (A) in the application.properties file.
+Make sure you use option (GB-H2) in the application.properties file.
 (url = `jdbc:h2:tcp://localhost/~/test`)
 
 #### B) Postgres in Docker
 If you have a Docker Desktop installed on your machine:
 - Start Postgres using the `docker/docker-compose.yml`
-- Use option (B) in the application.properties file.
+- Use option (DB-PG) in the application.properties file.
 
-## WireMock Setup - simulate external API
+### Add DB Latency😴
+To simulate network delay in talking to a DB running on the same machine, choose ONE of the options below.
+#### A) Hibernate Interceptor
+Use `SimulateNetworkDelayHibernateInterceptor` in the properties files to add a fixed delay to any prepared statement 
+created by Hibernate.
+#### B) ToxiProxy
+Emulate network latency by driving all DB traffic through a proxy delaying network packets. 
+- Install [ToxiProxy](https://github.com/Shopify/toxiproxy#1-installing-toxiproxy) to your local machine.
+- Check it's started on port 8474 - you should see a 404 page at [http://localhost:8474](http://localhost:8474) 
+- Start victor.training.performance.profiling.util.ToxiProxyUtil.main
+- Change DB Port in application properties to point to the proxy port (eg) 5432 -> 55432
+
+
+### WireMock to simulate API calls with delay
+The WireMock stubs are in `src/test/wiremock/mappings` folder.
+#### A) Standalone Java Program
 Run `StartWireMock.java` to start the WireMock server.
-The stubs are in `wiremock/mappings` folder.
+#### B) In Docker
+Start 'wiremock' image in docker-compose.yml
 
-## Glowroot
-Glowroot is a Java agent that collects performance metrics and traces.
-You can download it from glowroot.org.
-Unzip the dist and copy the path to `glowroot.jar` inside.
 
-Add Glowroot as a 'VM option' to your application: `-javaagent:/path/to/glowroot.jar` in the run configuration
+### Start your app with Glowroot agent
+Glowroot is a lightweight Java agent that collects performance metrics and traces.
+You can download it from [glowroot.org](https://glowroot.org/).
+Unzip the dist zip, locate the `glowroot.jar` and copy the path to it.
+
+Add glowroot.jar as a java agent to your application by adding `-javaagent:/path/to/glowroot.jar`.
+You can do that in IntelliJ by filling the 'VM option' field of your run configuration.
 
 You must use <= Java 11 for Glowroot to work.
-When you run the application, you can access the Glowroot UI at http://localhost:4000
+When you run the application, you can access the Glowroot UI at http://localhost:4000. You should see a page like this:
 ![img.png](art/glowroot.png)
 
 ## Start the application
 Run `ProfiledApp.java` with the Glowroot agent.
 
 ## Run the load tests
-Run `LoadTest.java` and if successful, the generated HTML
-report should display a green bar like this:
+Run `LoadTest.java` and click the report printed in the console at the end.
+If successful, the generated HTML report should display a green bar like this:
 ![img.png](art/gatling.png)
 
 Note: We are using an artificial 'closed' load test model:

@@ -13,7 +13,7 @@ services:
   wiremock:
     image: wiremock/wiremock
     volumes:
-      - .:/home/wiremock
+      - ../src/test/wiremock:/home/wiremock
     command: --async-response-enabled=true
     ports:
       - "9999:8080"

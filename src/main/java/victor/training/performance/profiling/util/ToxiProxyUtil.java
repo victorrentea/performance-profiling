@@ -7,24 +7,31 @@ import eu.rekawek.toxiproxy.model.ToxicDirection;
 import java.io.IOException;
 
 public class ToxiProxyUtil {
+
+  public static final String PG_PROXY = "toxi-proxy";
+
   public static void main(String[] args) throws IOException {
-    delayTraficToPostgres();
+    delayTrafficToPostgres();
   }
 
-  public static void delayTraficToPostgres() throws IOException {
+  public static void delayTrafficToPostgres() throws IOException {
     // for this to work, please install ToxiProxy locally: https://github.com/shopify/toxiproxy#usage
     // eg on macos:
     // - brew install toxiproxy
     // - brew services start shopify/shopify/toxiproxy
     ToxiproxyClient client = new ToxiproxyClient("localhost", 8474);
 
-    Proxy oldProxy = client.getProxyOrNull("toxi-proxy");
+    Proxy oldProxy = client.getProxyOrNull(PG_PROXY);
     if (oldProxy != null) {
       oldProxy.delete();
       System.out.println("Deleted old Toxiproxy");
     }
 
-    Proxy proxy = client.createProxy("toxi-proxy", "localhost:55432", "localhost:5432");
+    // Note: if using other DB than Postgres, edit the port binding below:
+    String addressOfRealDB = "localhost:5432";
+    String addressListenedByProxy = "localhost:55432";
+
+    Proxy proxy = client.createProxy(PG_PROXY, addressListenedByProxy, addressOfRealDB);
     System.out.println("Created Toxiproxy");
 
     proxy.toxics().latency("real-latency", ToxicDirection.DOWNSTREAM, 3);

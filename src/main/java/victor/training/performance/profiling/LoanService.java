@@ -20,10 +20,7 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -50,6 +47,7 @@ public class LoanService {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
+
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
