@@ -41,7 +41,7 @@ public class LoanService {
     // => rezultat: tin 1/10 JDBC conn blocate cat timp fac requestul HTTP de mai jos !!
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 50% takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication);
     return dto;
   }
 
