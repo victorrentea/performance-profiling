@@ -69,12 +69,12 @@ public class LoanService {
 //  private static final List<Long> recentLoanStatusQueried = Collections.synchronizedList(new ArrayList<>()); // lista globala
   private static final List<Long> recentLoanStatusQueried = new ArrayList<>(); // lista globala
 
-  @Transactional
+//  @Transactional
 // = @GetMapping
   public Status getLoanApplicationStatusForClient(Long id) {
     // drama 1) din eg 20 de req simultane, 19 asteapta, 1 intra (sta dupa retea 2-10ms find).
     // drama 2) cand th sta sa intre in metoda, el nu doar sta ca 🐮, ci blocheaza si o connex din cauza @Transaction
-    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
 
     synchronized (this) {
       // ZONA CRITICA START ----
