@@ -28,7 +28,7 @@ import java.util.stream.LongStream;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-@Service
+@Service // singleton, 1 instanta/app
 //@Transactional
 @RequiredArgsConstructor
 public class LoanService {
@@ -70,12 +70,14 @@ public class LoanService {
 
   @Transactional
 // = @GetMapping
-  public Status getLoanApplicationStatusForClient(Long id) {
+  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+//    synchronized (this) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(id);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
     return loanApplication.getCurrentStatus();
+//    }
   }
 
 //  @Transactional
