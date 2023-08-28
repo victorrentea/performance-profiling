@@ -6,10 +6,6 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.client.RestTemplate;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -22,7 +18,10 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -35,7 +34,7 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
-//  @Transactional
+  //  @Transactional
   public LoanApplicationDto getLoanApplication(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 25% move this line first for x-fun
     // by default Spring odata ce a obtinut connex JDBC pe un thread de web, va tine acea conexiune
@@ -61,26 +60,34 @@ public class LoanService {
     // Envers merita investigat !
     // 2) new-age: CDC cu Debezium/Kafka Connect care tailuieste logul tranzactiilor din DB https://debezium.io/documentation/faq/
     //  si imediat ce vede un INSERT nou in LOAN_APPLICATION trimite automat un mesaj pe Kafka
-         // in loc de auditRepo.save aveai kafkaSender.send(
+    // in loc de auditRepo.save aveai kafkaSender.send(
     // 3) Event-Sourcing (stochezi doar eventurile si reconstruiesti restul din trailul de eventuri)
   }
 
 
+  // nu e suficient sa atomicizezi operatiile de pe List, ci cele 3 linii care lucreza
+//  private static final List<Long> recentLoanStatusQueried = Collections.synchronizedList(new ArrayList<>()); // lista globala
   private static final List<Long> recentLoanStatusQueried = new ArrayList<>(); // lista globala
 
   @Transactional
 // = @GetMapping
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
-//    synchronized (this) {
+  public Status getLoanApplicationStatusForClient(Long id) {
+    // drama 1) din eg 20 de req simultane, 19 asteapta, 1 intra (sta dupa retea 2-10ms find).
+    // drama 2) cand th sta sa intre in metoda, el nu doar sta ca 🐮, ci blocheaza si o connex din cauza @Transaction
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+
+    synchronized (this) {
+      // ZONA CRITICA START ----
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+      // ZONA CRITICA END ----
+    }
+
     return loanApplication.getCurrentStatus();
-//    }
   }
 
-//  @Transactional
+  //  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
   }
@@ -108,6 +115,7 @@ public class LoanService {
 
   //<editor-fold desc="insert initial payments in DB">
   private final EntityManager entityManager;
+
   @EventListener(ApplicationStartedEvent.class)
   @Transactional //batch together the inserts
   public void initPayments() {
