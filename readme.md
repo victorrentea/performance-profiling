@@ -4,10 +4,6 @@
 
 ### Start a Database
 You can use an in-memory standalone H2 or a PostgreSQL in a Docker.
-#### A) Standalone H2
-Run `StartDatabase.java` to start the H2 database server. 
-Make sure you use option (GB-H2) in the application.properties file.
-(url = `jdbc:h2:tcp://localhost/~/test`)
 
 #### B) Postgres in Docker
 If you have a Docker Desktop installed on your machine:
@@ -19,18 +15,11 @@ To simulate network delay in talking to a DB running on the same machine, choose
 #### A) Hibernate Interceptor
 Use `SimulateNetworkDelayHibernateInterceptor` in the properties files to add a fixed delay to any prepared statement 
 created by Hibernate.
-#### B) ToxiProxy
-Emulate network latency by driving all DB traffic through a proxy delaying network packets. 
-- Install [ToxiProxy](https://github.com/Shopify/toxiproxy#1-installing-toxiproxy) to your local machine.
-- Check it's started on port 8474 - you should see a 404 page at [http://localhost:8474](http://localhost:8474) 
-- Run `ConfigureToxiproxy`
-- Change DB Port in application properties to point to the proxy port (eg) 5432 -> 55432
 
 
 ### WireMock to simulate API calls with delay
 The WireMock stubs are in `src/test/wiremock/mappings` folder.
-#### A) Standalone Java Program
-Run `StartWireMock.java` to start the WireMock server.
+
 #### B) In Docker
 Start 'wiremock' image in docker-compose.yml
 
