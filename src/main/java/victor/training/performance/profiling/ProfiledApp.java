@@ -27,6 +27,7 @@ public class ProfiledApp implements WebMvcConfigurer {
     return new RestTemplate();
   }
 
+  // asta
   @Bean // enables the use of @Timed
   public TimedAspect timedAspect(MeterRegistry meterRegistry) {
     return new TimedAspect(meterRegistry);
