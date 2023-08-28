@@ -6,8 +6,10 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -39,6 +41,10 @@ public class LoanService {
     // by default Spring odata ce a obtinut connex JDBC pe un thread de web, va tine acea conexiune
     // pana la trimiterea raspunsului HTTP!
     // => rezultat: tin 1/10 JDBC conn blocate cat timp fac requestul HTTP de mai jos !!
+
+//    new RestTemplate().getForObject(..);// nu propaga TraceID
+//    restTemplate.getForObject(); // injectat @Autowired , propaga
+
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 75% takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: {}", loanApplication);
@@ -60,10 +66,11 @@ public class LoanService {
   }
 
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private static final List<Long> recentLoanStatusQueried = new ArrayList<>(); // lista globala
 
-//  @Transactional
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  @Transactional
+// = @GetMapping
+  public Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(id);
