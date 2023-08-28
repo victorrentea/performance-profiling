@@ -2,6 +2,7 @@ package victor.training.performance.profiling.entity;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -9,8 +10,8 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data // genereaza toString cu toate campurile
-//@Getter
+//@Data // genereaza toString cu toate campurile
+@Getter @Setter
 @Entity
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
@@ -31,6 +32,14 @@ public class LoanApplication {
     List<ApprovalStep> startedSteps = steps.stream().filter(ApprovalStep::isStarted).collect(toList());
     if (startedSteps.isEmpty()) return steps.get(0);
     return startedSteps.get(startedSteps.size() - 1);
+  }
+
+  @Override
+  public String toString() {
+    return "LoanApplication{" +
+        "id=" + id +
+        ", title='" + title + '\'' +
+        '}';
   }
 
   @Embeddable
