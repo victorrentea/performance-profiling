@@ -27,12 +27,12 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+//  @Transactional
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // move this line first for x-fun
@@ -43,6 +43,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional // necesar ca am 2 DB insert
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -51,6 +52,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+//  @Transactional
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
@@ -59,6 +61,7 @@ public class LoanService {
     return loanApplication.getCurrentStatus();
   }
 
+//  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
   }
