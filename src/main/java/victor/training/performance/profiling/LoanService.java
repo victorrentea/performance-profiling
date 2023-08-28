@@ -1,5 +1,7 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -127,4 +129,18 @@ public class LoanService {
   }
   //</editor-fold>
 
+}
+
+
+@Slf4j
+@RequiredArgsConstructor
+@Service
+class MyService {
+  private MeterRegistry meterRegistry;
+
+//  @Timed(extraTags = "#userId")
+  public void method(Long userId) {
+//    String user;
+//    meterRegistry.timer("analiza-anaf","user-"+userId);
+  }
 }
