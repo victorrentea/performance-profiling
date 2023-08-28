@@ -16,7 +16,7 @@ public class LoadTest extends Simulation {
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
                     .get("/loan/1"))
-            .injectClosed(constantConcurrentUsers(23).during(ofSeconds(12))))
+            .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));
   }
