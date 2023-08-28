@@ -27,6 +27,7 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
+//@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -34,8 +35,8 @@ public class LoanService {
 
 //  @Transactional
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // move this line first for x-fun
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 50% takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 16% move this line first for x-fun
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
@@ -47,6 +48,12 @@ public class LoanService {
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
+    // 1) old-age: DB trigger
+    // Envers merita investigat !
+    // 2) new-age: CDC cu Debezium/Kafka Connect care tailuieste logul tranzactiilor din DB https://debezium.io/documentation/faq/
+    //  si imediat ce vede un INSERT nou in LOAN_APPLICATION trimite automat un mesaj pe Kafka
+         // in loc de auditRepo.save aveai kafkaSender.send(
+    // 3) Event-Sourcing (stochezi doar eventurile si reconstruiesti restul din trailul de eventuri)
   }
 
 
