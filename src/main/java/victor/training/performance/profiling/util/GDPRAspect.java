@@ -38,13 +38,13 @@ public class GDPRAspect {
       return resultDto;
     }
 
-    String userJurisdiction = fetchJurisdiction(); // network call
 
     List<Field> annotatedFields = getAnnotatedFields(resultDto);
     if (annotatedFields.isEmpty()) {
       return resultDto; // TODO move this pre-check BEFORE the expensive network call
     }
 
+    String userJurisdiction = fetchJurisdiction(); // network call 14%
 
     clearFields(resultDto, userJurisdiction, annotatedFields);
     return resultDto;
