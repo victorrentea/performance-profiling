@@ -18,10 +18,7 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -97,8 +94,8 @@ public class LoanService {
   }
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
-    List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
+    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = variable 29k, 31k (less data) or 32.000 (more data)
+    Set<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
     hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }

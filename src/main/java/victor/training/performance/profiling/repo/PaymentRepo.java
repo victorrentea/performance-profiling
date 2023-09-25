@@ -4,9 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import victor.training.performance.profiling.entity.Payment;
 
-import java.util.List;
+import java.util.Set;
 
 public interface PaymentRepo extends JpaRepository<Payment, Long> {
   @Query("SELECT id FROM Payment")
-  List<Long> allIds();
+  Set<Long> allIds();
 }
