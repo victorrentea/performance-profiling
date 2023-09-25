@@ -7,6 +7,9 @@
 //import java.io.IOException;
 //
 //public class ConfigureToxiproxy {
+
+// network proxy made by Spotify who introduces artificial latency/drop packages
+
 //
 //  public static final String PG_PROXY = "toxi-proxy";
 //

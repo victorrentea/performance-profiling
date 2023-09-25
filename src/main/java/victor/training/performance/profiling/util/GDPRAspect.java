@@ -30,7 +30,7 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object resultDto = pjp.proceed();
+    Object resultDto = pjp.proceed(); // real code goes through to the real method
     if (resultDto == null) {
       return null;
     }
@@ -38,13 +38,13 @@ public class GDPRAspect {
       return resultDto;
     }
 
-    String userJurisdiction = fetchJurisdiction(); // network call
 
     List<Field> annotatedFields = getAnnotatedFields(resultDto);
     if (annotatedFields.isEmpty()) {
       return resultDto; // TODO move this pre-check BEFORE the expensive network call
     }
 
+    String userJurisdiction = fetchJurisdiction(); // network call to get the USER ROLE
 
     clearFields(resultDto, userJurisdiction, annotatedFields);
     return resultDto;

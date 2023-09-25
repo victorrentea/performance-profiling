@@ -27,7 +27,6 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -43,6 +42,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional // required since I do 2 x INSERT/ UPDATE..  ATOMIC
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -51,6 +51,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  //@Transactional // some fun after lunch
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list

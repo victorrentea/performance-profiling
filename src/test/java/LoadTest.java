@@ -11,11 +11,13 @@ public class LoadTest extends Simulation {
     GatlingEngine.startClass(LoadTest.class);
   }
 
+  // K6 / Gatling / jMeter (old UI guy)
   {
     String host = "http://localhost:8080";
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
                     .get("/loan/1"))
+
             .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));
