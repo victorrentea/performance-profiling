@@ -19,14 +19,14 @@ public class HotMethodLoadTest extends Simulation {
     String host = "http://localhost:8080";
 
     setUp(scenario(getClass().getSimpleName())
-            .exec(http("less data (29.999)")
+            .exec(http("less data (29.000)")
                     .post("/payments/delta")
                     .header("Content-Type", "application/json")
-                    .body(StringBody(generateData(29_999))))
-            .exec(http("more data (32.000)")
+                    .body(StringBody(generateData(29_000))))
+            .exec(http("more data (31.000)")
                     .post("/payments/delta")
                     .header("Content-Type","application/json")
-                    .body(StringBody(generateData(32_000))))
+                    .body(StringBody(generateData(31_000))))
             .injectClosed(constantConcurrentUsers(8).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));

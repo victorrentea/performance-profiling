@@ -26,7 +26,9 @@ public class LoanApplication {
   }
 
   private ApprovalStep getLastStep() {
-    List<ApprovalStep> startedSteps = steps.stream().filter(ApprovalStep::isStarted).collect(toList());
+    List<ApprovalStep> startedSteps = steps.stream()
+        .filter(ApprovalStep::isStarted)
+        .toList();
     if (startedSteps.isEmpty()) return steps.get(0);
     return startedSteps.get(startedSteps.size() - 1);
   }
