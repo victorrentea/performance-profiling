@@ -32,9 +32,11 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+  @Transactional // a proxy running in front of this method
+  // acquires a connfrom JDBC conn pool and keeps it blocked for the ENTIRE DURATION OF THIS METHOD!
   public LoanApplicationDto getLoanApplication(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // HTTP takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
