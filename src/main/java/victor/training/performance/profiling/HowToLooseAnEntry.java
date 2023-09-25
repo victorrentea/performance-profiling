@@ -26,14 +26,14 @@ public class HowToLooseAnEntry {
 
   }
 
+  @Data
+  private static class Child {
+  //  @Id
+  //  private Long id;
+    String name;
+  }
 }
 
 
 // hash/equals should only involve immutable fields.
 // whenever two objects are equals they should have the same hashCode
-@Data
-class Child {
-//  @Id
-//  private Long id;
-  String name;
-}
