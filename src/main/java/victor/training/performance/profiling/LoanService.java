@@ -6,8 +6,6 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -20,7 +18,10 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -31,8 +32,16 @@ import static java.util.stream.Collectors.toList;
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final AuditRepo auditRepo;
+  // imagine a FixedSizeSyncQueue<T> < yur class new FixedSizeSyncQueue(10); //
+// implementing internally synchronization
+  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private final PaymentRepo paymentRepo;
+  //<editor-fold desc="insert initial payments in DB">
+  private final EntityManager entityManager;
+//  private final Set<Long> lukasz = Collections.synchronizedSet(new LinkedHashSet<>());
 
-//  @Transactional // a proxy running in front of this method
+  //  @Transactional // a proxy running in front of this method
   // acquires a connfrom JDBC conn pool and keeps it blocked for the ENTIRE DURATION OF THIS METHOD!
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 75%  LONGEST i expect HTTP takes ±40ms in prod
@@ -51,25 +60,26 @@ public class LoanService {
     return dto;
   }
 
-  private final AuditRepo auditRepo;
-
   @Transactional // required since I do 2 x INSERT/ UPDATE..  ATOMIC
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
-
-  //@Transactional // some fun after lunch
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  // 'synchronized' is implemented with C++
+  // Java 21 is OUT, its best feature: Virtual Threads. they HATE 'synchronized'
+//  @Transactional(isolation = ) // some fun after lunch
+  public /*synchronized*/ Status getLoanApplicationStatusForClient(Long id) {
+//    ReentrantLock is Virtual-Thread friendly alternative to synchronized
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    synchronized (this) {// keep your critical sections (parts that have to run 1 th at a time) as small as possible
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
     return loanApplication.getCurrentStatus();
   }
+  //</editor-fold>
 
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
@@ -85,9 +95,6 @@ public class LoanService {
         .setTitle("4Porche")
         .setSteps(List.of(step1, step2)));
   }
-  //</editor-fold>
-
-  private final PaymentRepo paymentRepo;
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
     HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
@@ -96,8 +103,6 @@ public class LoanService {
     return hashSet.size();
   }
 
-  //<editor-fold desc="insert initial payments in DB">
-  private final EntityManager entityManager;
   @EventListener(ApplicationStartedEvent.class)
   @Transactional //batch together the inserts
   public void initPayments() {
