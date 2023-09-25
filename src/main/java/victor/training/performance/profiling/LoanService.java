@@ -35,11 +35,19 @@ public class LoanService {
 //  @Transactional // a proxy running in front of this method
   // acquires a connfrom JDBC conn pool and keeps it blocked for the ENTIRE DURATION OF THIS METHOD!
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 40%  LONGEST i expect HTTP takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 75%  LONGEST i expect HTTP takes ±40ms in prod
     // open-in-view by default spring Boot keeps the JDBC connection on the HTTP thread until the response is sent to the client
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 60%
+    // TODO move it back first + set the property to false
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 25%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+
+    // NEVER use if just to avoid a + => use {}
+//    if (log.isTraceEnabled()) {
+//      log.trace("Loan app: " + loanApplication);
+////      log.trace("Loan app: {}", toJson(loanApplication)); // the only reason to use if(log.istrace0
+//    }
+    log.trace("Loan app: {}", loanApplication); // 8% // toString triggers a Lazy Loading of a collection of children
+    // {} avoids calling a heavy toString (in this HORROR scenario, hitting the DB)!!!)
     return dto;
   }
 
