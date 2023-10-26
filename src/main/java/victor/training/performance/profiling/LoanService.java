@@ -34,10 +34,13 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 60% not 20%
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 30% not 80% takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 26% > 60% not 20%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 70% > 30% not 80% takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication); // 10% ARE YOU NUTS!?? it's a log trace!!
+//    if (log.isTraceEnabled()) {
+//      log.trace("Loan app: {}", toJson(loanApplication)); // 10% ARE YOU NUTS!?? it's a log trace!!
+//    }
+    log.trace("Loan app: {}", loanApplication); // 10% ARE YOU NUTS!?? it's a log trace!!
     return dto;
   }
 
@@ -49,15 +52,25 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  Set<Long> set = new HashSet<>();
+  // global list, because it's an instance field of a spring singleton
+  private final List<Long> recentLoanStatusQueried = /*Collections.synchronizedList(*/new ArrayList<>();
 
 //  @Transactional // crime if on a syncronized method
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+  // synchronized means one single thread can enter this method on this instance (singleton)
+  public  Status getLoanApplicationStatusForClient(Long id) {
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(id);
+    synchronized (this) {
+      // critical section
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
+    // Further advice: if you want to play with mutable object in multithread env,
+    // PLEASE create a dedicated class to encapsulate those changes in a thread-save OBJECT
+    // playing Extreme OOP eg
+    // new BoundedList(10);
+    // boundendList.add() {internally syncrhronized
     return loanApplication.getCurrentStatus();
   }
 
@@ -82,7 +95,8 @@ public class LoanService {
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
     HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
     List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
-    hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    dbPaymentIds.forEach(hashSet::remove);
+//    hashSet.removeAll(new HashSet<>(dbPaymentIds)); // 98% expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 

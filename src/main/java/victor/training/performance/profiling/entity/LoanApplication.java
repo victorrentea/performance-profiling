@@ -2,13 +2,14 @@ package victor.training.performance.profiling.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data
+@Data // generates a toString with all fields
 @Entity
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
@@ -17,8 +18,12 @@ public class LoanApplication {
   private Long id;
   private String title;
   @ElementCollection
+  @ToString.Exclude
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
+  @ToString.Exclude
+  // or override tostring,
+  // or best: give up on using @Data on @Entity, also for generated HashCode/Equals
   private List<LoanClient> beneficiaries = new ArrayList<>();
 
   public Status getCurrentStatus() {

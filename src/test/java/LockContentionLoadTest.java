@@ -16,7 +16,7 @@ public class LockContentionLoadTest extends Simulation {
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
                     .get("/loan/1/status"))
-            .injectClosed(constantConcurrentUsers(10).during(ofSeconds(8))))
+            .injectClosed(constantConcurrentUsers(20).during(ofSeconds(8))))
 
             .protocols(http.baseUrl(host));
   }
