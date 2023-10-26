@@ -23,6 +23,7 @@ import victor.training.performance.profiling.repo.PaymentRepo;
 import java.util.*;
 import java.util.stream.LongStream;
 
+import static java.lang.System.currentTimeMillis;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
