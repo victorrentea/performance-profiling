@@ -28,16 +28,15 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 80% takes ±40ms in prod
     // move this line first for x-fun
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 20%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
@@ -45,6 +44,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional // Atomic 2 inserts
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -53,6 +53,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+//  @Transactional // crime if on a syncronized method
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
