@@ -1,11 +1,11 @@
 package victor.training.performance.profiling.util;
 
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

@@ -6,15 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import victor.training.performance.profiling.extra.ConfigureToxiproxy;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @SpringBootApplication
@@ -47,4 +48,11 @@ public class ProfiledApp implements WebMvcConfigurer {
 //    ConfigureToxiproxy.delayTrafficToPostgres();
     SpringApplication.run(ProfiledApp.class, args);
   }
+
+    // tell Tomcat to create a new virtual thread for every incoming request, unlimited number.
+    // Since virtual threads are extremely LIGHT, they need not be pooled
+//  @Bean
+//  public TomcatProtocolHandlerCustomizer<?> protocolHandlerVirtualThreadExecutorCustomizer() {
+//    return protocol -> protocol.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+//  }
 }

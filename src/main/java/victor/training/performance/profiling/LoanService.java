@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -19,7 +20,6 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
-import javax.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.LongStream;
 

@@ -1,4 +1,4 @@
-package victor.training.performance.profiling.extra;
+package victor.training.performance.profiling.util;
 
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
