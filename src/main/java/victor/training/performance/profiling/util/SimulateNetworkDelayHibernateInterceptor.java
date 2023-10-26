@@ -3,6 +3,7 @@ package victor.training.performance.profiling.util;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Interceptor;
+import org.hibernate.metamodel.RepresentationMode;
 import org.hibernate.type.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,15 @@ public class SimulateNetworkDelayHibernateInterceptor implements Interceptor {
   }
 
   @Override
+  public Object instantiate(String entityName, RepresentationMode representationMode, Object id) throws CallbackException {
+//    if (MILLIS != 0) {
+//      PerformanceUtil.sleepMillis(MILLIS);
+//    }
+    return null;
+  }
+
+  @Override
   public boolean onLoad(Object entity, Object id, Object[] state, String[] propertyNames, Type[] types) throws CallbackException {
-    if (MILLIS != 0)
-      PerformanceUtil.sleepMillis(MILLIS);
     return false;
   }
 }

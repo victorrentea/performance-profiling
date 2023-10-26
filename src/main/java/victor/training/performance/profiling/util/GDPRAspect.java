@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -45,12 +44,10 @@ public class GDPRAspect {
       return resultDto; // TODO move this pre-check BEFORE the expensive network call
     }
 
-
     clearFields(resultDto, userJurisdiction, annotatedFields);
     return resultDto;
   }
 
-  @Nullable
   private String fetchJurisdiction() {
     try {
       return restTemplate.getForObject("http://localhost:9999/jurisdiction", String.class);
