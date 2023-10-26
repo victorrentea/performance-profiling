@@ -18,7 +18,7 @@ public class SimulateNetworkDelayHibernateInterceptor implements Interceptor {
 
   @EventListener(ApplicationStartedEvent.class)
   public void setNetworkDelay() {
-    log.info("Adding {}}ms delay/sql, to simulate real life", MILLIS);
+    log.info("Adding {}ms delay/sql, to simulate real life", MILLIS);
   }
 
   @Override

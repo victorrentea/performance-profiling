@@ -4,10 +4,12 @@ import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +22,8 @@ import java.util.concurrent.Executors;
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients
+@ImportAutoConfiguration({FeignAutoConfiguration.class})
+
 public class ProfiledApp implements WebMvcConfigurer {
   private static final long t0 = System.currentTimeMillis();
 
