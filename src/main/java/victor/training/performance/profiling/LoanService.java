@@ -34,10 +34,10 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 20%
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 80% takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 60% not 20%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 30% not 80% takes ±40ms in prod
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: " + loanApplication); // 10% ARE YOU NUTS!?? it's a log trace!!
     return dto;
   }
 
