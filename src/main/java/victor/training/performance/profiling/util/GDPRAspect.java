@@ -37,12 +37,14 @@ public class GDPRAspect {
       return resultDto;
     }
 
-    String userJurisdiction = fetchJurisdiction(); // network call
-
     List<Field> annotatedFields = getAnnotatedFields(resultDto);
     if (annotatedFields.isEmpty()) {
       return resultDto; // TODO move this pre-check BEFORE the expensive network call
     }
+
+    String userJurisdiction = fetchJurisdiction(); // network call
+    // the BEST solution is to receive the ROLE of the user via a request header
+    // eg via a JWT token
 
     clearFields(resultDto, userJurisdiction, annotatedFields);
     return resultDto;

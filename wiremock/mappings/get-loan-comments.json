@@ -16,6 +16,6 @@
         "body": "PR rejected!"
       }
     ],
-    "fixedDelayMilliseconds": 10
+    "fixedDelayMilliseconds": 40
   }
 }

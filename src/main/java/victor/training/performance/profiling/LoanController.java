@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +28,11 @@ public class LoanController {
     loanService.saveLoanApplication(title);
   }
 
+  private final MeterRegistry meterRegistry;
   @GetMapping("loan/{id}/status")
   public LoanApplication.Status getStatus(@PathVariable Long id) {
+//    meterRegistry.gauge()
+//    meterRegistry.timer("").record(()->{....});
     return loanService.getLoanApplicationStatusForClient(id);
   }
 
