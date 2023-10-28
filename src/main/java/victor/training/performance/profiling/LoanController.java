@@ -4,13 +4,11 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.LoanApplication;
-import victor.training.performance.profiling.util.PerformanceUtil;
 
 import java.util.List;
-
-import static victor.training.performance.profiling.util.PerformanceUtil.sleepMillis;
 
 @Slf4j
 @RestController
@@ -21,6 +19,10 @@ public class LoanController {
   @GetMapping("loan/{id}")
   public LoanApplicationDto get(@PathVariable Long id) {
     return loanService.getLoanApplication(id);
+  }
+  @GetMapping("loan/{id}/comments-bis")
+  public List<CommentDto> getBis(@PathVariable Long id) {
+    return loanService.getLoanCommentsBis(id);
   }
 
   @PostMapping("loan/{title}")
