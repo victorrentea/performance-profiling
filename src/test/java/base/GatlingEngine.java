@@ -16,9 +16,13 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.CompletableFuture.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GatlingEngine {
   public static void main(String[] args) {
@@ -32,7 +36,10 @@ public class GatlingEngine {
 
   public static void startClass(Class<?> clazz) {
     waitForApp();
-    clearGlowrootData();
+
+//    clearGlowrootData();
+    // clear JFR after Gatling starts to give time to JVM to warmup
+    runAsync(GatlingEngine::clearGlowrootData, delayedExecutor(3, SECONDS));
 
     GatlingPropertiesBuilder props = new GatlingPropertiesBuilder()
         .resourcesDirectory(mavenResourcesDirectory().toString())
@@ -40,7 +47,11 @@ public class GatlingEngine {
         .binariesDirectory(mavenBinariesDirectory().toString())
         .simulationClass(clazz.getCanonicalName());
 
-    Gatling.fromMap(props.build());
+    int returnCode = Gatling.fromMap(props.build());
+
+    if (returnCode != 0) {
+      System.err.println("❌❌❌ Some Requests were in ERROR ❌❌❌");
+    }
 
     System.out.println("You can access Glowroot at http://localhost:4000");
     System.out.println("Flamegraph🔥🔥🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
@@ -74,7 +85,7 @@ public class GatlingEngine {
       URI uri = URI.create("http://localhost:4000/backend/admin/delete-all-stored-data");
       HttpRequest postRequest = HttpRequest.newBuilder().POST(BodyPublishers.ofString("{}")).uri(uri).build();
       HttpClient.newHttpClient().send(postRequest, BodyHandlers.discarding());
-      System.out.println("Glowroot found at localhost:4000 -> cleared past data");
+      System.out.println("Glowroot found at localhost:4000 -> cleared past data in " + Thread.currentThread().getName());
     } catch (IOException | InterruptedException e) {
       System.out.println("WARN: Could not clear Glowroot data. not started on :4000?");
     }
