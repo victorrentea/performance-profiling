@@ -76,3 +76,7 @@ Go to http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
 4. Fix the Apache HTTP Client connection pool
    - Observe: time is spent to acquire a connection from the Apache Http connection pool
    - Remove `feign.httpclient.max-connections-per-route` from application.properties
+
+
+
+Import https://grafana.com/grafana/dashboards/19004-spring-boot-statistics/

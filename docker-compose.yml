@@ -16,7 +16,7 @@ services:
       - ./wiremock:/home/wiremock
     command: --async-response-enabled=true --port 9999
     ports:
-      - "9999:9998"
+      - "9999:9999"
 
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy
@@ -24,3 +24,20 @@ services:
       - "8474:8474" # toxiproxy API
       - "55432:55432" # toxiproxy PG
       - "9991:9991"
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - .:/etc/prometheus
+
+  grafana: # http://localhost:3000/d/spring_boot_21/spring-boot-3-x-statistics?orgId=1&refresh=1s
+    image: grafana/grafana
+    environment:
+      GF_DASHBOARDS_MIN_REFRESH_INTERVAL: 1s
+      GF_AUTH_ANONYMOUS_ENABLED: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
