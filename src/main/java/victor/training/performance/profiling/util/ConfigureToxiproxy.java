@@ -8,33 +8,18 @@ import java.io.IOException;
 
 public class ConfigureToxiproxy {
 
-  public static final String PG_PROXY = "toxi-proxy";
-
   public static void main(String[] args) throws IOException {
-    delayTrafficToPostgres();
-  }
-
-  public static void delayTrafficToPostgres() throws IOException {
-    // for this to work, please install ToxiProxy locally: https://github.com/shopify/toxiproxy#usage
-    // eg on macos:
-    // - brew install toxiproxy
-    // - brew services start shopify/shopify/toxiproxy
     ToxiproxyClient client = new ToxiproxyClient("localhost", 8474);
 
-    Proxy oldProxy = client.getProxyOrNull(PG_PROXY);
-    if (oldProxy != null) {
-      oldProxy.delete();
-      System.out.println("Deleted old Toxiproxy");
-    }
+    for (Proxy proxy : client.getProxies()) proxy.delete();
 
-    // Note: if using other DB than Postgres, edit the port binding below:
-    String addressOfRealDB = "localhost:5432";
-    String addressListenedByProxy = "localhost:55432";
+    // toxiproxy inside Docker sees requests to its machine as coming to toxiproxy host
+    var pg = client.createProxy("pg", "toxiproxy:55432", "postgres:5432");
 
-    Proxy proxy = client.createProxy(PG_PROXY, addressListenedByProxy, addressOfRealDB);
-    System.out.println("Created Toxiproxy");
+    pg.toxics().latency("real-latency", ToxicDirection.DOWNSTREAM, 5);
 
-    proxy.toxics().latency("real-latency", ToxicDirection.DOWNSTREAM, 3);
+//    var wm = client.createProxy("wm", "toxiproxy:9991", "wiremock:9999");
+
     System.out.println("Configured Toxiproxy");
   }
 
