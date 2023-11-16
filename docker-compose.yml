@@ -23,7 +23,8 @@ services:
     ports:
       - "8474:8474" # toxiproxy API
       - "55432:55432" # toxiproxy PG
-      - "9991:9991"
+      - "9991:9991" # toxiproxy Wiremock
+
   prometheus:
     image: prom/prometheus
     ports:
