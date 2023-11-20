@@ -19,6 +19,6 @@ public class LoanApplicationDto {
     id = loanApplication.getId();
     title = loanApplication.getTitle();
     globalStatus = loanApplication.getCurrentStatus();
-    this.comments = comments.stream().map(CommentDto::getBody).collect(toList());
+    this.comments = comments.stream().map(CommentDto::body).collect(toList());
   }
 }
