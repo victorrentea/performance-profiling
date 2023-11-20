@@ -55,20 +55,27 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
+  private final BoundedQueue<Long> recentLoanStatusQueried = new BoundedQueue<>(10);
+//  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+//  private final BoundedQueue<OStructuraCuSetteri> recentLoanStatusQueried = new BoundedQueue<>(10);
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-//  probleme aici
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  // 'synchronized' este implementat in JVM cu cod C++, nu Java.
+  // JFR nu vede in C++.
+
+  public /*synchronized*/ Status getLoanApplicationStatusForClient(Long id) {
+    // syncronized instance method = 1 singur thread poate intra in aceasta metoda pt instanta curenta (singleton global)
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+
     recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    // Recomandare de design: daca ai date modificabile din multithread in mod thread safe,
+    // => INCAPSULEZI acele date intr-o clasa noua "new BoundedQueue(10); .add"
+
     return loanApplication.getCurrentStatus();
   }
 
   public List<Long> getRecentLoanStatusQueried() {
-    return new ArrayList<>(recentLoanStatusQueried);
+    return recentLoanStatusQueried.getContents();
   }
 
   //<editor-fold desc="insert initial loans in database">
