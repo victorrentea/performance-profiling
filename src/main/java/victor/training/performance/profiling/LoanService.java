@@ -57,16 +57,19 @@ public class LoanService {
 
   private final BoundedQueue<Long> recentLoanStatusQueried = new BoundedQueue<>(10);
 //  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
-//  private final BoundedQueue<OStructuraCuSetteri> recentLoanStatusQueried = new BoundedQueue<>(10);
+//  private final BoundedQueue<OStructuraCuSetteri> aiGresitFilmu = new BoundedQueue<>(10);
+  // codul multi-threaded iubeste clasele imutabile
 
 
   // 'synchronized' este implementat in JVM cu cod C++, nu Java.
   // JFR nu vede in C++.
 
+  // REGULA: eviti sa pui synchronized pe metode din backend
   public /*synchronized*/ Status getLoanApplicationStatusForClient(Long id) {
     // syncronized instance method = 1 singur thread poate intra in aceasta metoda pt instanta curenta (singleton global)
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
 
+//    recentLoanStatusQueried.getContents().get(0).setTzeapa()
     recentLoanStatusQueried.add(id);
     // Recomandare de design: daca ai date modificabile din multithread in mod thread safe,
     // => INCAPSULEZI acele date intr-o clasa noua "new BoundedQueue(10); .add"
@@ -94,8 +97,8 @@ public class LoanService {
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
     HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
-    List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
-    hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    List<Long> list = paymentRepo.allIds(); // size = 30.000
+    hashSet.removeAll(new HashSet<>(list)); // expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 
