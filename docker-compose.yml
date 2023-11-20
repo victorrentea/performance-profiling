@@ -36,7 +36,7 @@ services:
     image: grafana/grafana
     environment:
       GF_DASHBOARDS_MIN_REFRESH_INTERVAL: 1s
-      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
     ports:
       - "3000:3000"
     volumes:

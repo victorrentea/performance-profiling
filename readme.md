@@ -12,6 +12,7 @@
 7. Run `ProfiledApp` 
    a. Check glowroot works at http://localhost:4000. You should see a page like this:
    ![img.png](art/glowroot.png)
+------ cine a ajuns pana aici ?
 8. Run `LoadTest.java` and click the link to the report printed in the console at the end. 
    aIf successful, the generated HTML report should display a green bar like this:
    ![img.png](art/gatling.png)
