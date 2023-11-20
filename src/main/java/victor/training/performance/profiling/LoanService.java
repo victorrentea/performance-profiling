@@ -41,7 +41,7 @@ public class LoanService {
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);  fixme, explica JFR
+    log.trace("Loan app: " + loanApplication);  // fixme, explica JFR
     return dto;
   }
 
@@ -56,7 +56,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  probleme aici
+//  probleme aici
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
