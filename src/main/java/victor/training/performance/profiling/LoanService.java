@@ -29,28 +29,25 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
+
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+//  @Transactional// bloca conex JDBC pt toata durata metodei + REST Call in metoda = Connection Pool Starvation
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: " + loanApplication);  fixme, explica JFR
     return dto;
-  }
-
-  public void method() {
-//    new RestTemplate().getForObject() // pe req care pleaca NU se pune TraceID
-//    webClient/restTemplate.getForObject() // acum pleaca traceID @Autowired
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional // ok aici
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -59,6 +56,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  probleme aici
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
     recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
