@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -40,6 +42,11 @@ public class LoanService {
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
+  }
+
+  public void method() {
+//    new RestTemplate().getForObject() // pe req care pleaca NU se pune TraceID
+//    webClient/restTemplate.getForObject() // acum pleaca traceID @Autowired
   }
 
   private final AuditRepo auditRepo;

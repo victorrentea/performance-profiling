@@ -13,7 +13,7 @@ import java.util.List;
 @FeignClient("loan-comments")
 public interface CommentsApiClient {
 
-  @Timed
+  @Timed // scot pe /actuator/prometheus metrici de durata
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable Long id);
 }
