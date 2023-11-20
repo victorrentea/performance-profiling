@@ -2,13 +2,14 @@ package victor.training.performance.profiling.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data
+@Data // lombok
 @Entity
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
@@ -17,9 +18,19 @@ public class LoanApplication {
   private Long id;
   private String title;
   @ElementCollection
+  @ToString.Exclude
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
+  @ToString.Exclude
   private List<LoanClient> beneficiaries = new ArrayList<>();
+
+//  @Override
+//  public String toString() {
+//    return "LoanApplication{" +
+//           "id=" + id +
+//           ", title='" + title + '\'' +
+//           '}';
+//  }
 
   public Status getCurrentStatus() {
     return getLastStep().getStatus();

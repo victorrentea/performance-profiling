@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import ch.qos.logback.classic.Logger;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +38,12 @@ public class LoanService {
 
 //  @Transactional// bloca conex JDBC pt toata durata metodei + REST Call in metoda = Connection Pool Starvation
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //  75% takes ±40ms in prod
     // move this line first for x-fun
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 23 %
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);  // fixme, explica JFR
+    log.trace("Loan app: {}", loanApplication);
+    // folosim{} ca sa evitam un toString() scump (LAZY LOAD IN PUII MEI) + toString sa nu faca vreodata lazy loading
     return dto;
   }
 
