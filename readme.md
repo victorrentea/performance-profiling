@@ -4,7 +4,7 @@
 1. clone & mvn install
 2. import in IDE
 3. start docker-compose.yml (You have a Docker Desktop installed on your machine)
-4. Add 5ms DB Latency via a ToxiProxy: run `ConfigureToxiproxy`
+4. Add 5ms DB Latency via a ToxiProxy: run `ConfigureToxiproxy.java`
    a. Change DB Port in application properties to point to the ToxyProxi-ed port (eg) 5432 -> 55432
 5. Download glowroot from [glowroot.org](https://glowroot.org/). Unzip the dist zip, locate the `glowroot.jar` and copy the path to it.
 6. Add glowroot.jar as a java agent to the run config of ProfiledApp by adding `-javaagent:/path/to/glowroot.jar`.
@@ -16,6 +16,11 @@
    aIf successful, the generated HTML report should display a green bar like this:
    ![img.png](art/gatling.png)
 9. See the profiler results as a flamegraph at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
+
+
+
+
+
 
 ## Optimization steps
 1. Avoid useless network call from @Aspect
