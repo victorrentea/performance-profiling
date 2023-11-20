@@ -58,6 +58,7 @@ public class LoanService {
     recentLoanStatusQueried.add(id);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
     return loanApplication.getCurrentStatus();
+    // also consider encapsulating multithreaded code in a BoundedQueue class
   }
 
   public List<Long> getRecentLoanStatusQueried() {
@@ -79,9 +80,9 @@ public class LoanService {
   private final PaymentRepo paymentRepo;
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29.999 (less data) or 32.000 (more data)
-    List<Long> dbPaymentIds = paymentRepo.allIds(); // size = 30.000
-    hashSet.removeAll(dbPaymentIds); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    List<Long> list = paymentRepo.allIds(); // size = 30.000
+    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29K (less data) or 31.000 (more data)
+    hashSet.removeAll(list); // expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 
