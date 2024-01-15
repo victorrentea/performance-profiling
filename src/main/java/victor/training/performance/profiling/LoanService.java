@@ -103,9 +103,9 @@ public class LoanService {
   private final PaymentRepo paymentRepo;
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
-    List<Long> list = paymentRepo.allIds(); // size = 30.000
+    List<Long> list = paymentRepo.allIds(); // 10% size = 30.000
     HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29K (less data) or 31.000 (more data)
-    hashSet.removeAll(list); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    hashSet.removeAll(new HashSet<>(list)); // 90% expected time = O(N=30K) as hashSet.remove() is O(1)
     return hashSet.size();
   }
 

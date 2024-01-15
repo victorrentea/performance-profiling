@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
@@ -37,8 +38,6 @@ public class LoanApplication {
     if (startedSteps.isEmpty()) return steps.get(0);
     return startedSteps.get(startedSteps.size() - 1);
   }
-
-
 
   @Embeddable
   @Data
