@@ -35,9 +35,9 @@ public class LoanService {
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
     // BAD PRACTICE: intr-o metoda @Transactional sa faci un REST API CALL duce la JDBC Connection Pool Starvation
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 81% takes ±40ms in prod
     // move this line first for x-fun
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 18%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
     return dto;
