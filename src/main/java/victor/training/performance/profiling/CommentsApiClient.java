@@ -10,7 +10,7 @@ import victor.training.performance.profiling.dto.CommentDto;
 
 import java.util.List;
 
-@FeignClient("loan-comments")
+@FeignClient(value = "loan-comments", url = "http://localhost:9999")
 public interface CommentsApiClient {
 
   @Timed

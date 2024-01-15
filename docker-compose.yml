@@ -18,7 +18,7 @@ services:
     ports:
       - "9999:9999"
 
-  toxiproxy:
+  toxiproxy: # adds artificial latency between dockers and/or network issues (lost packages... )
     image: ghcr.io/shopify/toxiproxy
     ports:
       - "8474:8474" # toxiproxy API

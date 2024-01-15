@@ -1,6 +1,6 @@
 package victor.training.performance.profiling;
 
-import jakarta.persistence.EntityManager;
+import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -34,6 +34,7 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
+    log.info("Start");
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
