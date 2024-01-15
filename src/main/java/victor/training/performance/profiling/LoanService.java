@@ -27,13 +27,14 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional // 54% din timp se pierde de intainte de a instra in getLoanApplication
+//@Transactional // 54% din timp se pierde de intainte de a instra in getLoanApplication
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
+    // BAD PRACTICE: intr-o metoda @Transactional sa faci un REST API CALL duce la JDBC Connection Pool Starvation
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
