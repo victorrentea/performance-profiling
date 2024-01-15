@@ -39,7 +39,9 @@ public class LoanService {
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 18%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication);
+        // #2 ORM face lazy load de colectii pt toString generat de Lombok @Data
+        // #1 SURPRIZE: logul in prod e pe INFO nu pe TRACE
     return dto;
   }
 

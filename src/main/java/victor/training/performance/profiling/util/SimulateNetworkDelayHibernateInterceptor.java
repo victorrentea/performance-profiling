@@ -29,4 +29,5 @@ public class SimulateNetworkDelayHibernateInterceptor extends EmptyInterceptor {
       PerformanceUtil.sleepMillis(MILLIS);
     return false;
   }
+
 }
