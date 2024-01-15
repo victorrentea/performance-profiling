@@ -1,14 +1,11 @@
 package victor.training.performance.profiling;
 
-import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -20,7 +17,11 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
-import java.util.*;
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -41,8 +42,8 @@ public class LoanService {
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
 //    log.trace("Loan app: {}", loanApplication);
-        // #2 ORM face lazy load de colectii pt toString generat de Lombok @Data
-        // #1 SURPRIZE: logul in prod e pe INFO nu pe TRACE
+    // #2 ORM face lazy load de colectii pt toString generat de Lombok @Data
+    // #1 SURPRIZE: logul in prod e pe INFO nu pe TRACE
     return dto;
   }
 
@@ -60,18 +61,25 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-
+  // max 10 items
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
-    // also consider encapsulating multithreaded code in a BoundedQueue class
+  // 90% din timpul metodei asteia se sta la rand sa intre in metoda threadu, ca e altu inauntru
+  // synchronized e cod C++ !!! (PANICA MARE IN JAVA21 Virtual Threads) => JFR vede alb
+  // poblema e = lock contention
+  // synchronized pe metoda de instanta foloseste lockul instantei (=singleton de Spring @Service)
+  public /*synchronized*/ Status getLoanApplicationStatusForClient(Long id) {
+    synchronized (this) {
+      log.info("Soc!");// ASTA!>??!?! n-are cum
+      LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id); // modificam o lista globala doar intr-un bloc syncronized
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+      return loanApplication.getCurrentStatus();
+    }
   }
 
+  // also consider encapsulating multithreaded code in a BoundedQueue class
   public List<Long> getRecentLoanStatusQueried() {
     return new ArrayList<>(recentLoanStatusQueried);
   }
@@ -99,6 +107,7 @@ public class LoanService {
 
   //<editor-fold desc="insert initial payments in DB">
   private final EntityManager entityManager;
+
   @EventListener(ApplicationStartedEvent.class)
   @Transactional //batch together the inserts
   public void initPayments() {
