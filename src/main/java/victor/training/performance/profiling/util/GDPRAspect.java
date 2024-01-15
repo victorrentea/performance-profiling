@@ -41,7 +41,7 @@ public class GDPRAspect {
 
     List<Field> annotatedFields = getAnnotatedFields(resultDto);
     if (annotatedFields.isEmpty()) {
-      return resultDto; // TODO move this pre-check BEFORE the expensive network call
+      return resultDto; // TODO move earlier
     }
 
     clearFields(resultDto, userJurisdiction, annotatedFields);

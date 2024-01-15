@@ -1,5 +1,6 @@
 package victor.training.performance.profiling.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.CallbackException;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Interceptor;
@@ -11,10 +12,10 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class SimulateNetworkDelayHibernateInterceptor implements Interceptor {
 
-  private static final Logger log = LoggerFactory.getLogger(SimulateNetworkDelayHibernateInterceptor.class);
   public static int MILLIS = 3;
 
   @EventListener(ApplicationStartedEvent.class)
@@ -24,9 +25,9 @@ public class SimulateNetworkDelayHibernateInterceptor implements Interceptor {
 
   @Override
   public Object instantiate(String entityName, RepresentationMode representationMode, Object id) throws CallbackException {
-//    if (MILLIS != 0) {
-//      PerformanceUtil.sleepMillis(MILLIS);
-//    }
+    if (MILLIS != 0) {
+      PerformanceUtil.sleepMillis(MILLIS);
+    }
     return null;
   }
 

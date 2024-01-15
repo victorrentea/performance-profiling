@@ -16,6 +16,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import victor.training.performance.profiling.util.ConfigureToxiproxy;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -55,7 +56,6 @@ public class ProfiledApp implements WebMvcConfigurer {
   }
 
   public static void main(String[] args) throws IOException {
-//    ConfigureToxiproxy.delayTrafficToPostgres();
     SpringApplication.run(ProfiledApp.class, args);
   }
 

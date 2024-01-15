@@ -1,4 +1,4 @@
-package victor.training.performance.server;
+package victor.training.performance.extra;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -9,9 +9,9 @@ import java.util.Map;
 
 @SpringBootApplication
 @RestController
-public class ServerApp {
+public class StartSecondApp {
   public static void main(String[] args) {
-    new SpringApplicationBuilder(ServerApp.class)
+    new SpringApplicationBuilder(StartSecondApp.class)
         .properties(Map.of("server.port", "8081"))
         .run(args);
 //    SpringApplication.run(ServerApp.class, args);
