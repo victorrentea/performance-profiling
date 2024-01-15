@@ -2,6 +2,7 @@ package victor.training.performance.profiling;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.LoanApplication;
@@ -15,7 +16,8 @@ import static victor.training.performance.profiling.util.PerformanceUtil.sleepMi
 @RestController
 @RequiredArgsConstructor
 public class LoanController {
-  private final LoanService loanService;
+  @Autowired
+  private  LoanService loanService;
 
   @GetMapping("loan/{id}")
   public LoanApplicationDto get(@PathVariable Long id) {

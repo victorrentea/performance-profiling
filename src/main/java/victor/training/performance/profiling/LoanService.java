@@ -27,14 +27,13 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
+//@Transactional // 54% din timp se pierde de intainte de a instra in getLoanApplication
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    log.info("Start");
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     // move this line first for x-fun
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
@@ -45,6 +44,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
