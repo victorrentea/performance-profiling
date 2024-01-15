@@ -68,20 +68,24 @@ public class LoanService {
   // synchronized e cod C++ !!! (PANICA MARE IN JAVA21 Virtual Threads) => JFR vede alb
   // poblema e = lock contention
   // synchronized pe metoda de instanta foloseste lockul instantei (=singleton de Spring @Service)
+//  @Transactional = crima daca combini cu synchronize
   public /*synchronized*/ Status getLoanApplicationStatusForClient(Long id) {
-    synchronized (this) {
-      log.info("Soc!");// ASTA!>??!?! n-are cum
-      LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
+    log.info("Soc!");// ASTA!>??!?! n-are cum
+    LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow(); // 100% din timp
+    synchronized (this) { // Fix: redus dimensiunea "blocului critic"
       recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(id); // modificam o lista globala doar intr-un bloc syncronized
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-      return loanApplication.getCurrentStatus();
     }
+    return loanApplication.getCurrentStatus();
   }
 
   // also consider encapsulating multithreaded code in a BoundedQueue class
   public List<Long> getRecentLoanStatusQueried() {
-    return new ArrayList<>(recentLoanStatusQueried);
+    synchronized (this) {
+      return new ArrayList<>(recentLoanStatusQueried); // intorc o copie, nu colectia aflata sub modificar concurente
+      // citesc acum in pace, fara grija ca alt thread imi strica colectia pe sub
+    }
   }
 
   //<editor-fold desc="insert initial loans in database">
