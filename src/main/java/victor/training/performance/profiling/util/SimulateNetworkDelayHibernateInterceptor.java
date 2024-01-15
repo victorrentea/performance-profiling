@@ -24,6 +24,11 @@ public class SimulateNetworkDelayHibernateInterceptor extends EmptyInterceptor {
   }
 
   @Override
+  public void onCollectionRecreate(Object collection, Serializable key) throws CallbackException {
+    super.onCollectionRecreate(collection, key);
+  }
+
+  @Override
   public boolean onLoad(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) throws CallbackException {
     if (MILLIS != 0)
       PerformanceUtil.sleepMillis(MILLIS);

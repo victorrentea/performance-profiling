@@ -37,9 +37,10 @@ public class LoanService {
     // BAD PRACTICE: intr-o metoda @Transactional sa faci un REST API CALL duce la JDBC Connection Pool Starvation
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 81% takes ±40ms in prod
     // move this line first for x-fun
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 18%
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 19%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: {}", loanApplication);
+    log.trace("Loan app: " + loanApplication);
+//    log.trace("Loan app: {}", loanApplication);
         // #2 ORM face lazy load de colectii pt toString generat de Lombok @Data
         // #1 SURPRIZE: logul in prod e pe INFO nu pe TRACE
     return dto;
