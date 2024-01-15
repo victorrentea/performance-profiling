@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-//@Transactional // 54% din timp se pierde de intainte de a instra in getLoanApplication
+@Transactional // 54% din timp se pierde de intainte de a instra in getLoanApplication
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
@@ -41,6 +41,12 @@ public class LoanService {
     log.trace("Loan app: " + loanApplication);
     return dto;
   }
+
+  // avem acum in fata un JDBC Connection Pool Starvation
+  // (cand termini treaba cu DB, reciclezi connex pt alt request)
+  // max size =10 (HikariCP default)
+
+  // anormal sa ai connection acquisition time mare. (normal ff aproape de 0),
 
   private final AuditRepo auditRepo;
 
