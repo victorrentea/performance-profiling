@@ -2,6 +2,7 @@ package victor.training.performance.profiling;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.*;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.LoanApplication;
@@ -19,6 +20,7 @@ public class LoanController {
 
   @GetMapping("loan/{id}")
   public LoanApplicationDto get(@PathVariable Long id) {
+    MDC.put("clientId", "din req");
     return loanService.getLoanApplication(id);
   }
 

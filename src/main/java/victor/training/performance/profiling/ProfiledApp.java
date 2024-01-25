@@ -1,8 +1,15 @@
 package victor.training.performance.profiling;
 
 import io.micrometer.core.aop.TimedAspect;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Statistic;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.config.MeterFilterReply;
+import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -29,6 +36,30 @@ import java.util.concurrent.Executors;
 public class ProfiledApp implements WebMvcConfigurer {
   private static final long t0 = System.currentTimeMillis();
 
+
+  @Bean
+  public MeterFilter fi() {
+    return new MeterFilter() {
+      @Override
+      public MeterFilterReply accept(Meter.Id id) {
+        return MeterFilterReply.ACCEPT;
+      }
+
+      @Override
+      public Meter.Id map(Meter.Id id) {
+        String v = MDC.get("clientId");
+
+        Tag tag = Tag.of("clientId", v!=null ? v : "no-client-id");
+        return id.withTag(tag);
+      }
+
+      @Override
+      public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+        return MeterFilter.super.configure(id, config);
+      }
+    };
+  }
+
   @Bean // instrumented by Micrometer and Sleuth
   public RestTemplate restTemplate() {
     return new RestTemplate();
@@ -41,7 +72,10 @@ public class ProfiledApp implements WebMvcConfigurer {
 
   @Bean
   MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
-    return registry -> registry.config().commonTags("application", "APP");
+//    return registry -> registry.config().commonTags("application", "APP");
+
+      return registry -> registry.config().meterFilter(fi());
+
   }
 
   @EventListener(ApplicationReadyEvent.class)
