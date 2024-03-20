@@ -49,7 +49,6 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   public synchronized Status getLoanApplicationStatusForClient(Long id) {
@@ -58,7 +57,7 @@ public class LoanService {
     recentLoanStatusQueried.add(id);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
     return loanApplication.getCurrentStatus();
-    // also consider encapsulating multithreaded code in a BoundedQueue class
+    // consider extracting a thread-safe 'BoundedQueue' class
   }
 
   public List<Long> getRecentLoanStatusQueried() {
@@ -80,10 +79,10 @@ public class LoanService {
   private final PaymentRepo paymentRepo;
 
   public int getUnprocessedPayments(List<Long> newPaymentIds) {
-    List<Long> list = paymentRepo.allIds(); // size = 30.000
-    HashSet<Long> hashSet = new HashSet<>(newPaymentIds); // size = 29K (less data) or 31.000 (more data)
-    hashSet.removeAll(list); // expected time = O(N=30K) as hashSet.remove() is O(1)
-    return hashSet.size();
+    List<Long> list30 = paymentRepo.allIds(); // size = 30.000
+    HashSet<Long> hashSet29 = new HashSet<>(newPaymentIds); // size = 29K (less data) or 31.000 (more data)
+    hashSet29.removeAll(list30); // expected time = O(N=30K) as hashSet.remove() is O(1)
+    return hashSet29.size();
   }
 
   //<editor-fold desc="insert initial payments in DB">
