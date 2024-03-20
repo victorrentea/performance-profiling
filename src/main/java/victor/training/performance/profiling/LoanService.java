@@ -7,8 +7,6 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -20,30 +18,32 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import victor.training.performance.profiling.repo.PaymentRepo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    // move this line first for x-fun
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod 50%
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 40%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication); // 10%
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -51,11 +51,13 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  public synchronized Status getLoanApplicationStatusForClient(Long id) {
+  public Status getLoanApplicationStatusForClient(Long id) {
     LoanApplication loanApplication = loanApplicationRepo.findById(id).orElseThrow();
-    recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(id);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.remove(id); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(id);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
     return loanApplication.getCurrentStatus();
     // consider extracting a thread-safe 'BoundedQueue' class
   }
@@ -87,6 +89,7 @@ public class LoanService {
 
   //<editor-fold desc="insert initial payments in DB">
   private final EntityManager entityManager;
+
   @EventListener(ApplicationStartedEvent.class)
   @Transactional //batch together the inserts
   public void initPayments() {
