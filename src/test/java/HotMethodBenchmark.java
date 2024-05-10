@@ -15,7 +15,7 @@ public class HotMethodBenchmark {
         .collect(Collectors.toSet());
     ArrayList<Integer> list = (ArrayList<Integer>) IntStream.range(0, 100_000).boxed()
         .collect(Collectors.toList());
-    list.remove(0); // this reduces time 65x times
+//    list.remove(0); // this reduces time 65x times
 
     set.removeAll(list);
   }
