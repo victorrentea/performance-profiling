@@ -12,12 +12,13 @@ public class LoadTest extends Simulation {
   }
 
   {
-    String host = "http://localhost:8080";
-
     setUp(scenario(getClass().getSimpleName())
         .exec(http("").get("/loan/1"))
-        .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
-        .protocols(http.baseUrl(host))
+        // 23 threads will fire requests in a loop
+        .injectClosed(constantConcurrentUsers(23)
+            .during(ofSeconds(8))))
+        .protocols(http.baseUrl("http://localhost:8080"))
+        // all requests should be successful
         .assertions(global().successfulRequests().percent().gt(99.0));
   }
 }
