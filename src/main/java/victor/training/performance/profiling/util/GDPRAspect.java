@@ -29,26 +29,27 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object resultDto = pjp.proceed();
-    if (resultDto == null) {
+    Object responseDto = pjp.proceed();
+    if (responseDto == null) {
       return null;
     }
-    if (!resultDto.getClass().getPackageName().startsWith("victor")) {
-      return resultDto;
+    if (!responseDto.getClass().getPackageName().startsWith("victor")) {
+      return responseDto;
     }
 
-    String userJurisdiction = fetchJurisdiction(); // network call
+    String userRole = fetchUserRole(); // network call
 
-    List<Field> annotatedFields = getAnnotatedFields(resultDto);
-    if (annotatedFields.isEmpty()) {
-      return resultDto; // TODO move earlier
+    List<Field> sensitiveFields = getAnnotatedFields(responseDto);
+    if (sensitiveFields.isEmpty()) {
+      return responseDto; // TODO move earlier
     }
 
-    clearFields(resultDto, userJurisdiction, annotatedFields);
-    return resultDto;
+    clearSensitiveFields(responseDto, userRole, sensitiveFields);
+
+    return responseDto;
   }
 
-  private String fetchJurisdiction() {
+  private String fetchUserRole() {
     try {
       return restTemplate.getForObject("http://localhost:9999/jurisdiction", String.class);
     } catch (RestClientException e) {
@@ -56,7 +57,7 @@ public class GDPRAspect {
     }
   }
 
-  private static void clearFields(Object result, String userJurisdiction, List<Field> fieldsToClear) throws IllegalAccessException {
+  private static void clearSensitiveFields(Object result, String userJurisdiction, List<Field> fieldsToClear) throws IllegalAccessException {
     for (Field field : fieldsToClear) {
       String requiredJurisdiction = field.getAnnotation(VisibleFor.class).value();
       if (!requiredJurisdiction.equals(userJurisdiction)) {
