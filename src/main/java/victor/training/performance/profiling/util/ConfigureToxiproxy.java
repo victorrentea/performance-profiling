@@ -20,7 +20,7 @@ public class ConfigureToxiproxy {
 
 //    var wm = client.createProxy("wm", "toxiproxy:9991", "wiremock:9999");
 
-    System.out.println("Configured Toxiproxy");
+    System.out.println("Configured Toxiproxy OK");
   }
 
 }
