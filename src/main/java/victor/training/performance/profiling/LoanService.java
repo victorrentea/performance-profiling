@@ -20,21 +20,21 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //45%  takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); //40%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication);// 31%
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+@Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
