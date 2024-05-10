@@ -4,19 +4,20 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.stream.Collectors.toSet;
+
 public class HotMethodBenchmark {
   @Test
-  void naive() {
-    HashSet<Integer> set = (HashSet<Integer>) IntStream.range(0, 100_000).boxed()
-        .collect(Collectors.toSet());
-    ArrayList<Integer> list = (ArrayList<Integer>) IntStream.range(0, 100_000).boxed()
-        .collect(Collectors.toList());
-//    list.remove(0); // this reduces time 65x times
+  void naive() { // in real life, microbenchmark using  Java Measuring Harness (JMH)
+    Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
+        .collect(toSet()); // returns a HashSet
+    List<Integer> list = IntStream.range(0, 100_000).boxed().toList();
 
-    set.removeAll(list);
+    hashSet.removeAll(list);
   }
 }

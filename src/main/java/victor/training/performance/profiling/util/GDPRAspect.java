@@ -37,12 +37,12 @@ public class GDPRAspect {
       return responseDto;
     }
 
-    String userRole = fetchUserRole(); // network call
 
     List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
+    String userRole = fetchUserRole(); // network call
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 
