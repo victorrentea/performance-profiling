@@ -2,14 +2,17 @@ package victor.training.performance.profiling.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-@Data
 @Entity
+//@Data
+@Getter @Setter
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
 
