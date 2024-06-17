@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString.Exclude;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,17 +12,17 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Entity
-@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
-//@Getter @Setter
+//@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
+@Getter @Setter // 💖💖💖💖💖💖 // nu mai generez toString pe toate campurile
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
-
   @Id
   private Long id;
   private String title;
   @ElementCollection
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
+//  @Exclude // riscant
   private List<LoanClient> beneficiaries = new ArrayList<>();
 
   public Status getCurrentStatus() {

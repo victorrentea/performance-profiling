@@ -22,7 +22,6 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional // ca de jr.
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
@@ -32,17 +31,20 @@ public class LoanService {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+//    if (log.isTraceEnabled()) { // NICIODATA asa:
+//      log.trace("Loan app: " + loanApplication); // + evalueaza loanApplication.toString()
+//    }
+    log.trace("Loan app: {}", loanApplication); // face .toString pe obiect doar DACA log == trace
+//    if (log.isTraceEnabled()) { // ⚠️DO NOT DELETE: ca sa nu chem jsonify degeaba. NICIODATA,decat daca chemi vreo functie in argumente
+//      log.trace("Loan app: {}", jsonify(loanApplication));
+//    }
     meterRegistry.counter("pasageriCarati").increment(2.5);
     return dto;
   }
 
-//  @Timed
-//  public int method(int a, int b) {
-//    return a+b;
-//  }
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -50,6 +52,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+//@Transactional // doamne fereste!
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list

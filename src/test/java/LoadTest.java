@@ -15,8 +15,8 @@ public class LoadTest extends Simulation {
     setUp(scenario(getClass().getSimpleName())
         .exec(http("").get("/loan/1"))
         // 23 threads will fire requests in a loop
-        .injectClosed(constantConcurrentUsers(23)
-            .during(ofSeconds(8))))
+        .injectClosed(constantConcurrentUsers(30)
+            .during(ofSeconds(30))))
         .protocols(http.baseUrl("http://localhost:8080"))
         // all requests should be successful
         .assertions(global().successfulRequests().percent().gt(99.0));
