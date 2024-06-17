@@ -20,6 +20,7 @@ public class LoanApplication {
   private Long id;
   private String title;
   @ElementCollection
+//  @ElementCollection(fetch = FetchType.EAGER) // nu e ok sa trag MEREU copiiiiii dupa mine. Mai avem nevoie si de bona/bunici.
   private List<ApprovalStep> steps = new ArrayList<>();
   @ManyToMany
 //  @Exclude // riscant

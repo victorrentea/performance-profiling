@@ -1,6 +1,5 @@
 package victor.training.performance.profiling;
 
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +57,9 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-//@Transactional // doamne fereste!
+//@Transactional // Doamne fereste!
   public synchronized Status getLoanStatus(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(loanId);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
