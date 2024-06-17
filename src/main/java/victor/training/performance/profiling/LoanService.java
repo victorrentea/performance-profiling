@@ -1,5 +1,7 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -20,19 +22,25 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional // ca de jr.
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final MeterRegistry meterRegistry;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
+    meterRegistry.counter("pasageriCarati").increment(2.5);
     return dto;
   }
 
+//  @Timed
+//  public int method(int a, int b) {
+//    return a+b;
+//  }
   private final AuditRepo auditRepo;
 
   public void saveLoanApplication(String title) {

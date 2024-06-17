@@ -27,9 +27,9 @@ public class GDPRAspect {
     String value();
   }
 
-  @Around("@within(org.springframework.web.bind.annotation.RestController))")
+  @Around("@within(org.springframework.web.bind.annotation.RestController))") // means: all methods in all classes annotated with @RestController
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object responseDto = pjp.proceed();
+    Object responseDto = pjp.proceed(); // cheama endpointul
     if (responseDto == null) {
       return null;
     }
@@ -37,14 +37,14 @@ public class GDPRAspect {
       return responseDto;
     }
 
-    String userRole = fetchUserRole(); // network call
-
-    List<Field> sensitiveFields = getAnnotatedFields(responseDto);
-    if (sensitiveFields.isEmpty()) {
+    List<Field> annotatedFields = getAnnotatedFields(responseDto);
+    if (annotatedFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
 
-    clearSensitiveFields(responseDto, userRole, sensitiveFields);
+    String userRole = fetchUserRole(); // network call
+
+    clearSensitiveFields(responseDto, userRole, annotatedFields);
 
     return responseDto;
   }

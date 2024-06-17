@@ -10,10 +10,11 @@ import victor.training.performance.profiling.dto.CommentDto;
 
 import java.util.List;
 
+@Timed // < 10us
 @FeignClient("loan-comments")
 public interface CommentsApiClient {
 
-  @Timed
+//  @Timed("fetchComments")
   @GetMapping("loan-comments/{id}")
-  List<CommentDto> fetchComments(@PathVariable Long id);
+  List<CommentDto> fetchComments(@PathVariable Long id); // 10 millis = 10.000 us
 }
