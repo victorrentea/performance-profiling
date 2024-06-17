@@ -39,7 +39,8 @@ public class LoanService {
 //    if (log.isTraceEnabled()) { // NICIODATA asa:
 //      log.trace("Loan app: " + loanApplication); // + evalueaza loanApplication.toString()
 //    }
-    log.trace("Loan app: {}", loanApplication); // face .toString pe obiect doar DACA log == trace
+//    log.trace("Loan app: {}", loanApplication); // face .toString pe obiect doar DACA log == trace
+    log.trace("Loan app: " + loanApplication);
 //    if (log.isTraceEnabled()) { // ⚠️DO NOT DELETE: ca sa nu chem jsonify degeaba. NICIODATA,decat daca chemi vreo functie in argumente
 //      log.trace("Loan app: {}", jsonify(loanApplication));
 //    }
