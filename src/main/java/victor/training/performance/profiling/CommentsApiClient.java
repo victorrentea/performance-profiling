@@ -15,5 +15,5 @@ public interface CommentsApiClient {
 
   @Timed
   @GetMapping("loan-comments/{id}")
-  List<CommentDto> fetchComments(@PathVariable Long id);
+  List<CommentDto> fetchComments(@PathVariable("id") Long id);
 }
