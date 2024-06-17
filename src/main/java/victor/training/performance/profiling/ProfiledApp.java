@@ -53,7 +53,7 @@ public class ProfiledApp implements WebMvcConfigurer {
   }
 
   @Bean // propagate tracing over all Spring-managed thread pools
-  public TaskDecorator otelTaskDecorator() {
+  public TaskDecorator taskDecorator() {
     return (runnable) -> ContextSnapshot.captureAll().wrap(runnable);
   }
 

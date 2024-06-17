@@ -1,8 +1,6 @@
 version: '3.8'
 
 services:
-
-
   prometheus:
     image: prom/prometheus
     ports:
@@ -21,3 +19,4 @@ services:
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
+

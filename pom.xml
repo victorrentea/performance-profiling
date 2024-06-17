@@ -39,6 +39,7 @@
             <artifactId>p6spy</artifactId>
             <version>3.9.1</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -58,25 +59,23 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- A) https://zipkin.io/ -->
+        <!-- A) monitoring-plain: https://zipkin.io/ -->
+       <!--
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
-       <!-- <dependency>
+       <dependency>
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-reporter-brave</artifactId>
         </dependency>-->
 
-        <!-- B) https://opentelemetry.io -->
-        <!--<dependency>
+        <!-- B) monitoring-otel: https://opentelemetry.io -->
+        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-otel</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-exporter-zipkin</artifactId>
-        </dependency>-->
+
 
         <dependency>
             <!-- auto-restarts the app on Compile -->
@@ -91,12 +90,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
-            <version>3.0.1</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>

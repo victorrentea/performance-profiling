@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  grafana-otel: # login to http://localhost:3000 using admin:admin
+    image: grafana/otel-lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"

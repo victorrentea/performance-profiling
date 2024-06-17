@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class AutoDeleteGlowrootDB {
+public class AutoClearGlowrootDB {
   @Autowired
   private RestTemplate rest;
 
