@@ -34,5 +34,6 @@ public class LoanController {
     return loanService.getRecentLoanStatusQueried();
   }
 
+
 }
 

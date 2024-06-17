@@ -16,7 +16,7 @@ public class DummyLoadTest extends Simulation {
 
     setUp(scenario(getClass().getSimpleName()).exec(http("")
                     .get("/dummy"))
-            .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
+            .injectClosed(constantConcurrentUsers(23).during(ofSeconds(6))))
 
             .protocols(http.baseUrl(host));
   }

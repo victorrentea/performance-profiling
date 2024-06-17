@@ -12,7 +12,7 @@ import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class StartDelayedProxy {
+public class StartDatabaseProxy {
   private static String remoteHost;
   private static int remotePort;
   private static int port;
