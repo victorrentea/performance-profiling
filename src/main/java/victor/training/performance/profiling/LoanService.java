@@ -59,8 +59,8 @@ public class LoanService {
 
 //@Transactional // Doamne fereste! pt ca ma blochez in synchronized calare pe o tx
   public  Status getLoanStatus(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     synchronized(this) {
+      LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
       recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(loanId);
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
