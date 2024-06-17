@@ -18,6 +18,14 @@ public class HotMethodBenchmark {
         .collect(toSet()); // returns a HashSet
     List<Integer> list = IntStream.range(0, 100_000).boxed().toList();
 
+    hashSet.removeAll(new HashSet<>(list));
+  }
+  @Test
+  void naiveWTF() { // in real life, microbenchmark using  Java Measuring Harness (JMH)
+    Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
+        .collect(toSet()); // returns a HashSet
+    List<Integer> list = IntStream.range(0, 99_999).boxed().toList();
+
     hashSet.removeAll(list);
   }
 }
