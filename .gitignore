@@ -40,4 +40,6 @@ data-output*.txt
 /jaxb-parsed.xml
 /lib
 
+glowroot.jar
+opentelemetry-javaagent.jar
 capture/

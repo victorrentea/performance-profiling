@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -14,6 +15,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import victor.training.performance.profiling.ProfiledApp;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -31,12 +33,11 @@ import static java.util.stream.Collectors.joining;
 @RestController
 public class SecondApp {
   public static void main(String[] args) {
-    new SpringApplicationBuilder(SecondApp.class)
-        .properties(Map.of(
-            "server.port", "9999",
-            "spring.application.name", "second-app"))
-        .run(args);
+    // run this with VM Options:  -javaagent:/Users/victorrentea/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dspring.application.name=second-app
+    System.setProperty("server.port", "9999");
+    SpringApplication.run(SecondApp.class, args);
   }
+
 
   @GetMapping("jurisdiction")
   public String getJurisdiction() throws InterruptedException {
