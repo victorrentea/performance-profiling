@@ -28,8 +28,13 @@ public class LoanService {
   private final MeterRegistry meterRegistry;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    // A
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); //A:64%; STUPID!!!
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // A:34%;
+    // B
+//    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // B: 90% takes ±40ms in prod
+//    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // B:10% OK
+
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
 //    if (log.isTraceEnabled()) { // NICIODATA asa:
 //      log.trace("Loan app: " + loanApplication); // + evalueaza loanApplication.toString()
