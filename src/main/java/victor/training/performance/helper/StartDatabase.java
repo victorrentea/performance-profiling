@@ -1,4 +1,4 @@
-package victor.training.performance.extra;
+package victor.training.performance.helper;
 
 import java.io.File;
 import java.sql.SQLException;

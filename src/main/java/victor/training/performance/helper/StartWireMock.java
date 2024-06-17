@@ -1,15 +1,10 @@
-package victor.training.performance.extra;
+package victor.training.performance.helper;
 
 import com.github.tomakehurst.wiremock.standalone.WireMockServerRunner;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 

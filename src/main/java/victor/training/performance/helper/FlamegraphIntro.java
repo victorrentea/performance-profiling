@@ -1,14 +1,10 @@
-package victor.training.performance.extra;
+package victor.training.performance.helper;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class FlamegraphIntro {
-
-
-
-
   @GetMapping("dummy")
   public void dummy() throws InterruptedException {
     entry();
