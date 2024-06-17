@@ -17,6 +17,8 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Service
@@ -26,15 +28,20 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
 
-  public LoanApplicationDto getLoanApplication(Long loanId) {
+  public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
     // A
+    log.info("Incep");
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); //A:64%; STUPID!!!
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // A:34%;
+    List<CommentDto> comments =
+      CompletableFuture.supplyAsync(()->getComments(loanId)).get();
+
     // B
 //    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // B: 90% takes ±40ms in prod
+    log.info("Alt log");
 //    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // B:10% OK
 
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
+
 //    if (log.isTraceEnabled()) { // NICIODATA asa:
 //      log.trace("Loan app: " + loanApplication); // + evalueaza loanApplication.toString()
 //    }
@@ -45,6 +52,12 @@ public class LoanService {
 //    }
     meterRegistry.counter("pasageriCarati").increment(2.5);
     return dto;
+  }
+
+  private List<CommentDto> getComments(Long loanId) {
+    log.info("Inca un log");
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // A:34%;
+    return comments;
   }
 
   private final AuditRepo auditRepo;

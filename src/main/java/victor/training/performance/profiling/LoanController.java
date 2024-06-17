@@ -7,6 +7,7 @@ import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -15,7 +16,7 @@ public class LoanController {
   private final LoanService loanService;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) {
+  public LoanApplicationDto get(@PathVariable Long id) throws ExecutionException, InterruptedException {
     return loanService.getLoanApplication(id);
   }
 
