@@ -6,9 +6,19 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toSet;
 
-public class HotMethodTest {
+// in real life, microbenchmark using  Java Measuring Harness (JMH)
+public class HotMethodNaiveBenchTest {
   @Test
-  void naive() { // in real life, microbenchmark using  Java Measuring Harness (JMH)
+  void fast() {
+    Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
+        .collect(toSet()); // returns a HashSet
+    List<Integer> list = IntStream.range(0, 99_999).boxed().toList();
+
+    hashSet.removeAll(list);
+  }
+
+  @Test
+  void slow() {
     Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
         .collect(toSet()); // returns a HashSet
     List<Integer> list = IntStream.range(0, 100_000).boxed().toList();

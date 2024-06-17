@@ -1,21 +1,22 @@
 package victor.training.performance.profiling;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
 import victor.training.performance.profiling.entity.LoanApplication;
-import victor.training.performance.profiling.entity.LoanApplication.ApprovalStep;
 import victor.training.performance.profiling.entity.LoanApplication.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -25,7 +26,9 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+  @SneakyThrows
   public LoanApplicationDto getLoanApplication(Long loanId) {
+    log.info("Start");
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
@@ -50,19 +53,12 @@ public class LoanService {
     return loanApplication.getCurrentStatus();
   }
 
+  private final ThreadPoolTaskExecutor executor;
+
   public List<Long> getRecentLoanStatusQueried() {
+    log.info("In parent thread");
+    CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
     return new ArrayList<>(recentLoanStatusQueried);
   }
 
-  //<editor-fold desc="insert initial loans in database">
-  @EventListener(ApplicationStartedEvent.class)
-  public void insertInitialData() {
-    ApprovalStep step1 = new ApprovalStep().setName("Pre-Scan Client").setStatus(Status.APPROVED);
-    ApprovalStep step2 = new ApprovalStep().setName("Credit Registry").setStatus(Status.DECLINED);
-    loanApplicationRepo.save(new LoanApplication()
-        .setId(1L)
-        .setTitle("4Porche")
-        .setSteps(List.of(step1, step2)));
-  }
-  //</editor-fold>
 }

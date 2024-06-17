@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class Intro {
+public class FlameIntro {
   @GetMapping("dummy")
   private static void entry() throws InterruptedException {
     f();

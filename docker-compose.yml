@@ -1,12 +1,7 @@
 version: '3.8'
 
 services:
-  toxiproxy:
-    image: ghcr.io/shopify/toxiproxy
-    ports:
-      - "8474:8474" # toxiproxy API
-      - "55432:55432" # toxiproxy PG
-      - "9991:9991" # toxiproxy Wiremock
+
 
   prometheus:
     image: prom/prometheus

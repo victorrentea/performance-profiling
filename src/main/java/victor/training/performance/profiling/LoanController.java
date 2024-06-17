@@ -29,11 +29,10 @@ public class LoanController {
     return loanService.getLoanStatus(id);
   }
 
-  @GetMapping("loan/recent-queried")
+  @GetMapping("loan/recent")
   public List<Long> getLoanApplicationStatus() {
     return loanService.getRecentLoanStatusQueried();
   }
-
 
 }
 
