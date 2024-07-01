@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   grafana-otel: # login to http://localhost:3000 using admin:admin
+    # instrumen your project: -javaagent:/Users/victorrentea/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500
     image: grafana/otel-lgtm
     ports:
       - "3000:3000"
