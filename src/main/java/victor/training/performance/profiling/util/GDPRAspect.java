@@ -29,20 +29,20 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object responseDto = pjp.proceed();
+    Object responseDto = pjp.proceed(); // 90%
     if (responseDto == null) {
       return null;
     }
     if (!responseDto.getClass().getPackageName().startsWith("victor")) {
       return responseDto;
     }
-
-    String userRole = fetchUserRole(); // network call
-
-    List<Field> sensitiveFields = getAnnotatedFields(responseDto);
+List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
+    String userRole = fetchUserRole(); // network call 10%
+
+
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 
