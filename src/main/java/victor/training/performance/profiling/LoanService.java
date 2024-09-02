@@ -26,9 +26,13 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   @SneakyThrows
-  @Transactional
+//  @Transactional // too early opened and end it after the method terminates.
+  // do I NEED an SQL transaction to do a SELECT? NO!
+  // goal: keep less time the connection blocked
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
+    // terrible: API call while holding a JDBC transcation/conenction open = suicide.
+    // total# conn = 10 (default)
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
@@ -46,7 +50,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  @Transactional
+  @Transactional // TODO remove
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
@@ -57,7 +61,6 @@ public class LoanService {
 
   private final ThreadPoolTaskExecutor executor;
 
-  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
