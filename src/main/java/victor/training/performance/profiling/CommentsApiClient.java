@@ -13,7 +13,7 @@ import java.util.List;
 @FeignClient("loan-comments")
 public interface CommentsApiClient {
 
-  @Timed
+  @Timed // on any method you suspect it could take time (I/O, CPU)
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable("id") Long id);
 }

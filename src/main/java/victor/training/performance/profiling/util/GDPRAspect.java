@@ -36,13 +36,22 @@ public class GDPRAspect {
     if (!responseDto.getClass().getPackageName().startsWith("victor")) {
       return responseDto;
     }
-
-    String userRole = fetchUserRole(); // network call
-
     List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
-      return responseDto; // TODO move earlier
+      return responseDto;
     }
+    String userRole = fetchUserRole(); // network call
+    // the role of the user 10 years ago was retrieve from its HTTP session
+    // then then wrote this Aspect.
+    // the author of this aspect left.
+    // but times have changed. Now we have a microservice that provides the role
+
+    // how to improve speed and resilience?
+    // - ideally: JWT token carries the role
+    // - caching (when to expire...?) - avoid
+
+    // there are only two things hard in programming:
+    //   cache invalidation and naming things
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 
