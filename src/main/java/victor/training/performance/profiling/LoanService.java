@@ -21,12 +21,12 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   @SneakyThrows
+  @Transactional
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
@@ -38,6 +38,7 @@ public class LoanService {
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -45,6 +46,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  @Transactional
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
@@ -55,6 +57,7 @@ public class LoanService {
 
   private final ThreadPoolTaskExecutor executor;
 
+  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
