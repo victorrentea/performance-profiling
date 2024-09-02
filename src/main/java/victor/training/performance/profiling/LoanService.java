@@ -33,10 +33,14 @@ public class LoanService {
     log.info("Start");
     // terrible: API call while holding a JDBC transcation/conenction open = suicide.
     // total# conn = 10 (default)
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //  18% A: takes ±40ms in prod
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 65%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication); // 15% - WTF!?!!!! // FIX: {}
+    // Spring Boot 2. by default keeps the JDBC Connection open and bound to this thread
+    // until the end of the HTTP request. WHY?
+    // To avoid "Cannot initialize proxy - No session" errors, like any Jr faces.
+    // fix: open-session-in-view: false
     return dto;
   }
 
