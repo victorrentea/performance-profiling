@@ -54,8 +54,8 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  @Transactional // TODO remove
-  public synchronized Status getLoanStatus(Long loanId) {
+  @Transactional // FIXME Error #1 no need to transact a read
+  public synchronized Status getLoanStatus(Long loanId) { // FIXME Error #2: synchronized too much code
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(loanId);
