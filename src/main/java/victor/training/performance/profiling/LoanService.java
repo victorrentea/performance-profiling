@@ -54,13 +54,16 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  @Transactional // FIXME Error #1 no need to transact a read
-  public synchronized Status getLoanStatus(Long loanId) { // FIXME Error #2: synchronized too much code
+//  @Transactional // FIXME Error #1 no need to transact a read
+  public  Status getLoanStatus(Long loanId) { // FIXME Error #2: synchronized too much code
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
+
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    return loanApplication.getCurrentStatus(); // hides a lazy load Hit to DB => critical section still too long
+    }
   }
 
   private final ThreadPoolTaskExecutor executor;
