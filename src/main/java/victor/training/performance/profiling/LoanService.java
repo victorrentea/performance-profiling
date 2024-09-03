@@ -62,8 +62,8 @@ public class LoanService {
       recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(loanId);
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus(); // hides a lazy load Hit to DB => critical section still too long
     }
+    return loanApplication.getCurrentStatus(); // hides a lazy load Hit to DB => critical section still too long
   }
 
   private final ThreadPoolTaskExecutor executor;
