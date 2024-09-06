@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -23,6 +24,6 @@ public class HotMethodNaiveBenchTest {
         .collect(toSet()); // returns a HashSet
     List<Integer> list = IntStream.range(0, 100_000).boxed().toList();
 
-    hashSet.removeAll(list);
+    hashSet.removeAll(new HashSet<>(list));
   }
 }
