@@ -53,10 +53,10 @@ public class SecondApp {
   public List<CommentDto> getComments() throws InterruptedException {
     log.info("/loan-comments takes 10 millis");
     sleep(10);
-    if (Math.random() < 0.1) {
-      log.error("POC");
-      throw new RuntimeException("Random Exception");
-    }
+//    if (Math.random() < 0.1) {
+//      log.error("POC");
+//      throw new RuntimeException("Random Exception");
+//    }
     return List.of(
         new CommentDto("LGTM👍!"),
         new CommentDto("🦙💩"),
