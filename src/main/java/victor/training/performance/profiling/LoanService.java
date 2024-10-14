@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
@@ -60,7 +61,7 @@ public class LoanService {
 
 //  @Transactional // nu doar ca nu e necesar. E CRIMINAL DACA-L PUI
   // combinat cu synchronized = omori toata aplicatia.
-  @Transactional(readOnly = true)
+//  @Transactional(readOnly = true)
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     synchronized (recentLoanStatusQueried) {
