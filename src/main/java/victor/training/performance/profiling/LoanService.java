@@ -15,6 +15,7 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -46,16 +47,19 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private final List<Long> recentLoanStatusQueried =
+      new ArrayList<>();
 
 //  @Transactional // nu doar ca nu e necesar. E CRIMINAL DACA-L PUI
   // combinat cu synchronized = omori toata aplicatia.
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    return loanApplication.getCurrentStatus(); // 20% ?!?! WTFeature??!
+    }
   }
 
   private final ThreadPoolTaskExecutor executor;
