@@ -27,6 +27,11 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   @SneakyThrows
+//  @Transactional // explicatie pe larg in timpul siestei.
+  // inutil pt ca fac doar READ
+  // RAU pt ca: in aceasta metoda se face REST API CALL
+  // LEGE: nu ai voie REST API CALL IN METODA @Transactional
+  // atlfel tii deschisa conexiunea cat dureaza REST/WSDL(2s) API CALL = rau
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //🔥 21% WTF?!!
