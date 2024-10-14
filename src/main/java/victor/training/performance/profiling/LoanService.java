@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
@@ -29,15 +28,19 @@ public class LoanService {
   @SneakyThrows
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //🔥 21% WTF?!!
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 62%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: {}", loanApplication); //MUST HAVE!    -XXXXXX 16% NU SE POATE
+//    if (log.isTraceEnabled()) {// doar daca ca sa eviti callul toJson
+//      log.trace("Loan app: " + toJson(loanApplication));
+//    }
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional // 💖
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -45,6 +48,8 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+//  @Transactional // nu doar ca nu e necesar. E CRIMINAL DACA-L PUI
+  // combinat cu synchronized = omori toata aplicatia.
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
