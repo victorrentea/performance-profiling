@@ -34,8 +34,11 @@ public class LoanService {
   // atlfel tii deschisa conexiunea cat dureaza REST/WSDL(2s) API CALL = rau
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //🔥 21% WTF?!!
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 62%
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); //🔥 21% WTF?!!
+    // SURPRIZA: Spring Boot 2+ tine conex asoc cu threadul curent pana
+    // la finalul metodei care servete HTTP response
+
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: {}", loanApplication); //MUST HAVE!    -XXXXXX 16% NU SE POATE
 //    if (log.isTraceEnabled()) {// doar daca ca sa eviti callul toJson
