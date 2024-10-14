@@ -58,8 +58,8 @@ public class LoanService {
       recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(loanId);
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus(); // 20% ?!?! WTFeature??!
     }
+    return loanApplication.getCurrentStatus(); // 20% ?!?! WTFeature??!
   }
 
   private final ThreadPoolTaskExecutor executor;
