@@ -27,7 +27,7 @@ public class LoanApplication {
   private List<LoanClient> beneficiaries = new ArrayList<>();
 
   public Status getCurrentStatus() {
-    return getLastStep().getStatus();
+    return getLastStep().getStatus(); // lazy loading
   }
 
   @Override

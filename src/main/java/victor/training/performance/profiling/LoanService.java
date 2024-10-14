@@ -60,6 +60,7 @@ public class LoanService {
 
 //  @Transactional // nu doar ca nu e necesar. E CRIMINAL DACA-L PUI
   // combinat cu synchronized = omori toata aplicatia.
+  @Transactional(readOnly = true)
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     synchronized (recentLoanStatusQueried) {
