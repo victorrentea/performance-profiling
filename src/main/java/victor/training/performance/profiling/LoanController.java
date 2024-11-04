@@ -14,7 +14,8 @@ import java.util.List;
 public class LoanController {
   private final LoanService loanService;
 
-  @GetMapping("loan/{id}")
+  // @GET @Path("loan/{id}") // <<<<
+  @GetMapping("loan/{id}") // <<<<
   public LoanApplicationDto get(@PathVariable Long id) {
     return loanService.getLoanApplication(id);
   }
