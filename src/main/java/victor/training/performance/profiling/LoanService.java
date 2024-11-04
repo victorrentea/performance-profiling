@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import victor.training.performance.profiling.entity.LoanApplication.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,17 +27,27 @@ import java.util.concurrent.CompletableFuture;
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final HikariDataSource dataSource;
 
+  // 1) Avoid doing API calls (REST/SOAP/COBOL) while holding a DB transaction/connection
+  // because connections are a scarce precious resource
   @SneakyThrows
-  @Transactional
+  // @Transactional // I don't really need a Tx here since I'm just SELECTing
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Start");
+    Connection connection = dataSource.getConnection();
+    connection.setAutoCommit(false); // = start tx
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms in prod
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.trace("Loan app: " + loanApplication);
+    connection.commit();
     return dto;
   }
+
+
+
+
 
   private final AuditRepo auditRepo;
 
