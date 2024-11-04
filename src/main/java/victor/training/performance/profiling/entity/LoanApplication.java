@@ -12,8 +12,8 @@ import static java.util.stream.Collectors.toList;
 
 @Entity
 // ❌ NEVER USE @Data on @Entity!!!!
-//@Data // (lombok) generates @HashCodeEquals and @ToString on ALL FIELDS :
-// instead use just
+//@Data // (lombok) = @Getter, @Setter, @HashCodeEquals and @ToString on ALL FIELDS :
+// instead just use:
 @Getter @Setter
 public class LoanApplication { // toString
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
