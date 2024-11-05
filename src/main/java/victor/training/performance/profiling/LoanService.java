@@ -1,6 +1,5 @@
 package victor.training.performance.profiling;
 
-import ch.qos.logback.classic.Logger;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -16,9 +15,6 @@ import victor.training.performance.profiling.entity.LoanApplication.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -64,7 +60,7 @@ public class LoanService {
   // b) instead use:
 //  private final List<Long> recentLoanStatusQueried = Collections.synchronizedList(new ArrayList<>());
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+//  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   public synchronized void deadlock() {
     synchronized (this) { /*code*/ } // the same as 'synchronized' on the instance method
@@ -79,18 +75,11 @@ public class LoanService {
 
 
 
-
+  private final BoundedList<Long> recentLoanStatusQueried = new BoundedList<>(10);
 
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); //50%
-    synchronized (this) { // 35%
-      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list // 5%
-      recentLoanStatusQueried.add(loanId);
-    }
-    // getRecentLoanStatusQueried() could see 11 elements if runs at this line > inconsistency
-    synchronized (this) {
-      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    }
+    recentLoanStatusQueried.add(loanId);
     return loanApplication.getCurrentStatus(); // 7%
   }
 
@@ -100,9 +89,7 @@ public class LoanService {
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
-    synchronized (recentLoanStatusQueried) {
-      return new ArrayList<>(recentLoanStatusQueried);
-    }
+    return recentLoanStatusQueried.getACopy();
   }
 
 }
