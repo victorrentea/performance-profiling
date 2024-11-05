@@ -86,16 +86,13 @@ public class LoanService {
     synchronized (this) { // 35%
       recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list // 5%
       recentLoanStatusQueried.add(loanId);
+    }
+    // getRecentLoanStatusQueried() could see 11 elements if runs at this line > inconsistency
+    synchronized (this) {
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
     }
     return loanApplication.getCurrentStatus(); // 7%
   }
-
-
-
-
-
-
 
   private final ThreadPoolTaskExecutor executor;
 
