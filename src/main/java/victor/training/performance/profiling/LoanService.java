@@ -82,13 +82,13 @@ public class LoanService {
 
 
   public Status getLoanStatus(Long loanId) {
-    synchronized (this) {
-      LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); //50%
+    synchronized (this) { // 35%
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list // 5%
       recentLoanStatusQueried.add(loanId);
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-      return loanApplication.getCurrentStatus();
     }
+    return loanApplication.getCurrentStatus(); // 7%
   }
 
 
