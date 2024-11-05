@@ -72,9 +72,6 @@ public class LoanService {
   // wasteful(JDBC pool starvation) and risky (deadlocks)
   // @Transactional // makes a magic proxy acquire 1 connection from JDBC pool
 
-
-
-
   private final BoundedList<Long> recentLoanStatusQueried = new BoundedList<>(10);
 
   public Status getLoanStatus(Long loanId) {
