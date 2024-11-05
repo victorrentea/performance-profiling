@@ -1,17 +1,21 @@
 package victor.training.performance.helper;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.CompletableFuture;
 
 public class StartDatabase {
-	public static void main(String[] args) throws SQLException {
-		System.out.println("Started DB...");
-		System.out.println("Connecting to 'jdbc:h2:tcp://localhost:9092/~/test' will auto-create a database file 'test.mv.db' in user home (~)...");
-
+	public static void main(String[] args) throws SQLException, IOException {
+		System.out.println("Starting DB...");
 		deletePreviousDB();
-
-		// Allow auto-creating new databases on blockDisk at first connection
 		org.h2.tools.Server.createTcpServer("-ifNotExists").start();
+		System.out.println("✅ DB Started. You can connect to it using sa:sa at jdbc:h2:tcp://localhost:9092/~/test");
+
+		System.out.println("\nStarting DB Proxy ...");
+		StartDatabaseProxy proxy = new StartDatabaseProxy("localhost", 9092, 19092, 5);
+		CompletableFuture.runAsync(proxy::run);
+		System.out.println("✅ DB Proxy Started. Traffic delayed to jdbc:h2:tcp://localhost:19092/~/test");
 	}
 
 	private static void deletePreviousDB() {
