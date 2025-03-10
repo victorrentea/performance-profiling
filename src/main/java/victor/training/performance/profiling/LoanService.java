@@ -55,20 +55,23 @@ public class LoanService /*extends NeverDoThis*/ {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried =
-      Collections.synchronizedList(new ArrayList<>());
+  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-//  @Transactional // crime to combine with synchronized. not even needed here, as i only SELECT
-  public synchronized Status getLoanStatus(Long loanId) {
+  //  @Transactional // crime to combine with synchronized. not even needed here, as i only SELECT
+  public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    }
+    return loanApplication.getCurrentStatus(); // 5%
   }
 
   public void evil() {
-    recentLoanStatusQueried.add(1L); // other thread(s) doing this cannot RACE with getLoanStatus to change the list
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.add(1L); // other thread(s) doing this cannot RACE with getLoanStatus to change the list
+    }
   }
 
   private final ThreadPoolTaskExecutor executor;
