@@ -2,6 +2,10 @@ import base.GatlingEngine;
 import io.gatling.http.client.util.Assertions;
 import io.gatling.javaapi.core.Simulation;
 
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static java.time.Duration.ofSeconds;
@@ -23,6 +27,15 @@ public class LoadTest extends Simulation {
         // all requests should be successful
         .assertions(global().successfulRequests().percent().gt(99.0));
   }
+
+//  static {
+//    new ThreadPoolExecutor(
+//        1,1,
+//        1, TimeUnit.SECONDS,
+//        new PriorityBlockingQueue<>()
+//
+//    )
+//  }
 }
 
 // Open-world model: # requests / second

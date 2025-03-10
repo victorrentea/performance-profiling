@@ -15,6 +15,7 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -46,9 +47,6 @@ public class LoanService /*extends NeverDoThis*/ {
     return dto;
   }
 
-
-
-
   private final AuditRepo auditRepo;
 
   @Transactional
@@ -57,15 +55,20 @@ public class LoanService /*extends NeverDoThis*/ {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private final List<Long> recentLoanStatusQueried =
+      Collections.synchronizedList(new ArrayList<>());
 
-  @Transactional
+//  @Transactional // crime to combine with synchronized. not even needed here, as i only SELECT
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(loanId);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
     return loanApplication.getCurrentStatus();
+  }
+
+  public void evil() {
+    recentLoanStatusQueried.add(1L); // other thread(s) doing this cannot RACE with getLoanStatus to change the list
   }
 
   private final ThreadPoolTaskExecutor executor;
