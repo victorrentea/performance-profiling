@@ -9,9 +9,6 @@
   - After starting the app, directly at http://localhost:8080/h2-console 
     using (url = `jdbc:h2:tcp://localhost/~/test`, user=`sa`, password=`sa`)
 
-### Add DB Latency
-Run `StartDatabaseProxy.java` to simulate a network delay in talking to a remote DB.
-
 ### Start the Second Application
 Run `SecondApp.java` to start a second application that will be called by the first one.
 

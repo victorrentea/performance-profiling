@@ -12,6 +12,9 @@ public class LoadRampTest extends Simulation {
             .get("/loan/1"))
         .injectClosed(rampConcurrentUsers(0).to(30).during(15)))
 
+        // ramp up from 0 to 100 requests / second in a open world model
+//        .injectOpen(rampUsersPerSec(0).to(100).during(15)))
+
         .protocols(http.baseUrl(host));
   }
 
