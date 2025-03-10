@@ -55,33 +55,13 @@ public class LoanService /*extends NeverDoThis*/ {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
-
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
-  private final ReentrantLock lock = new ReentrantLock();
+private final LastRecentlyUsed lastRecentlyUsed = new LastRecentlyUsed();
 
   //  @Transactional // crime to combine with synchronized. not even needed here, as i only SELECT
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-//    synchronized (recentLoanStatusQueried) {
-    lock.lock();
-    try {
-      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-      recentLoanStatusQueried.add(loanId);
-      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    } finally {
-      lock.unlock();
-    }
+    lastRecentlyUsed.updateLastUsed(loanId);
     return loanApplication.getCurrentStatus(); // 5%
-  }
-
-  public void evil() {
-//    synchronized (recentLoanStatusQueried) {
-    lock.lock();
-    try {
-      recentLoanStatusQueried.add(1L); // other thread(s) doing this cannot RACE with getLoanStatus to change the list
-    } finally {
-      lock.unlock();
-    }
   }
 
   private final ThreadPoolTaskExecutor executor;
@@ -90,7 +70,7 @@ public class LoanService /*extends NeverDoThis*/ {
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
-    return new ArrayList<>(recentLoanStatusQueried);
+    return lastRecentlyUsed.get();
   }
 
 }
