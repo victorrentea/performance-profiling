@@ -55,7 +55,8 @@ public class LoanService /*extends NeverDoThis*/ {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
-private final LastRecentlyUsed lastRecentlyUsed = new LastRecentlyUsed();
+
+  private final LastRecentlyUsed lastRecentlyUsed = new LastRecentlyUsed();
 
   //  @Transactional // crime to combine with synchronized. not even needed here, as i only SELECT
   public Status getLoanStatus(Long loanId) {
@@ -66,7 +67,6 @@ private final LastRecentlyUsed lastRecentlyUsed = new LastRecentlyUsed();
 
   private final ThreadPoolTaskExecutor executor;
 
-  @Transactional
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
