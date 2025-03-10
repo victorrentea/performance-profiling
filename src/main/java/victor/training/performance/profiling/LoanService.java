@@ -29,11 +29,18 @@ public class LoanService /*extends NeverDoThis*/ {
   // @Transactional // i only READ data. no need for ACID features here.
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = meterRegistry.timer("commentsapi2").record(() ->
-        commentsApiClient.fetchComments(loanId)); // doing API calls in @Transactional method can starve the connection pool
+        commentsApiClient.fetchComments(loanId)); // not 90% but 21%
 
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // not 10% but 65%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+
+//    log.trace("Loan app: {}", ()-> jsonify(loanApplication)); // Avoid
+
+//    if (log.isTraceEnabled()) { // if (trace) only if you call an expensive method while formatting the string
+//      log.trace("Loan app: {}", jsonify(loanApplication)); // 13% time
+//    }
+
+    log.trace("Loan app: {}", loanApplication); // Fix#1
     return dto;
   }
 

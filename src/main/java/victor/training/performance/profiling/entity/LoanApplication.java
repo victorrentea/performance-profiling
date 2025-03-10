@@ -11,8 +11,8 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Entity
-@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
-//@Getter @Setter
+//@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
+@Getter @Setter // Fix#2: NEVER @Entity + @Data
 public class LoanApplication {
   public enum Status {NOT_STARTED, PENDING, APPROVED, DECLINED}
 
@@ -46,5 +46,4 @@ public class LoanApplication {
       return status != Status.NOT_STARTED;
     }
   }
-
 }
