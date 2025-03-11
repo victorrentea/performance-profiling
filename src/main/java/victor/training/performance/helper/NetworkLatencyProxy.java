@@ -1,8 +1,6 @@
 package victor.training.performance.helper;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,26 +10,29 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
-public class StartDatabaseProxy {
-  private final String remoteHost;
-  private final int remotePort;
-  private final int port;
-  private final int delayMillis;
+public class NetworkLatencyProxy {
+  private String remoteHost = "localhost";
+  private int remotePort = 9092;
+  private int port = 19092;
+  private int delayMillis = 3;
 
-  public StartDatabaseProxy(String remoteHost, int remotePort, int port, int delayMillis) {
-    this.remoteHost = remoteHost;
-    this.remotePort = remotePort;
-    this.port = port;
-    this.delayMillis = delayMillis;
+  public NetworkLatencyProxy() {
+  }
+
+  public NetworkLatencyProxy(String remoteHost, Integer remotePort, Integer port, Integer delayMillis) {
+    if (remoteHost != null) this.remoteHost = remoteHost;
+    if (remotePort != null) this.remotePort = remotePort;
+    if (port != null) this.port = port;
+    if (delayMillis != null) this.delayMillis = delayMillis;
   }
 
   public static void main(String[] args) throws IOException {
-    var remoteHost = System.getProperty("remoteHost", "localhost");
-    var remotePort = Integer.parseInt(System.getProperty("remotePort", "9092"));
-    var port = Integer.parseInt(System.getProperty("port", "19092"));
-    var delayMillis = Integer.parseInt(System.getProperty("delayMillis", "5"));
+    var remoteHost = System.getProperty("remoteHost", null);
+    var remotePort = Integer.parseInt(System.getProperty("remotePort", null));
+    var port = Integer.parseInt(System.getProperty("port", null));
+    var delayMillis = Integer.parseInt(System.getProperty("delayMillis", null));
 
-    new StartDatabaseProxy(remoteHost, remotePort, port, delayMillis).run();
+    new NetworkLatencyProxy(remoteHost, remotePort, port, delayMillis).run();
   }
 
   public void run() {

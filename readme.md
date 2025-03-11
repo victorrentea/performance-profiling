@@ -1,52 +1,31 @@
 # Java Performance Profiling Workshop
 
-## Setup
+### Start the Database
+- [▶️ Run StartDatabase](src/main/java/victor/training/performance/helper/StartDatabase.java) to start a standalone in-memory H2 database running at `jdbc:h2:tcp://localhost:9092/~/test` (user=`sa`, password=`sa`).
+- Traffic to database will be delayed by a [network proxy](src/main/java/victor/training/performance/helper/NetworkLatencyProxy.java) started on port `19092`. 
+- (Optional) Connect to the database from IntelliJ (or your tool of coice) through the proxy via URL: `jdbc:h2:tcp://localhost:19092/~/test`.
 
-### Start a Database
-- Start a standalone in-memory H2 database using `StartDatabase.java`.
-- Connect to the database:
-  - From IntelliJ Ultimate from application.properties file
-  - After starting the app, directly at http://localhost:8080/h2-console 
-    using (url = `jdbc:h2:tcp://localhost/~/test`, user=`sa`, password=`sa`)
+### Start the Second App
+- [▶️ Run SecondApp](src/main/java/victor/training/performance/helper/SecondApp.java) to start a second application called by the first one.
 
-### Add DB Latency
-Run `StartDatabaseProxy.java` to simulate a network delay in talking to a remote DB.
+### Start the Profiled App
+- [▶️ Run ProfiledApp](src/main/java/victor/training/performance/profiling/ProfiledApp.java) to start the application we will study.
 
-### Start the Second Application
-Run `SecondApp.java` to start a second application that will be called by the first one.
-
-### Add Glowroot agent
-Glowroot is a lightweight Java Agent that collects performance metrics and traces.
-Download it from [glowroot.org](https://glowroot.org/).
-Unzip the dist zip, and copy the path to the `glowroot.jar` in the root folder.
-
-Add glowroot.jar to the 'VM option' field of your run configuration in IntelliJ:
-`-javaagent:/path/to/glowroot.jar`.
-
-After starting the application, you can access the Glowroot UI at http://localhost:4000. 
-You should see a page like this:
+### Instrument the Profiled App with Glowroot
+Glowroot is a lightweight Java Agent that collects performance metrics and profiler results.
+- Download the dist zip from [glowroot.org](https://glowroot.org/).
+- Unzip it and copy the path to the `glowroot.jar`.
+- Add `-javaagent:/path/to/glowroot.jar` to the 'VM options' of your run configuration of ProfiledApp to instrument it.
+- Open http://localhost:4000 to see the Glowroot UI:
 ![img.png](art/glowroot.png)
 
-### Add the open-telemetry agent (optional: requires local Docker)
-- Start the monitoring-otel docker compose 
-- Download the OTEL agent from [https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases](here)
-- Add to your VM options: `-javaagent:/path/to/opentelemetry-javaagent.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500`
-
-## Start the application
-Run `ProfiledApp.java` with the Glowroot agent.
-
-## Run the load tests
-Run `LoadTest.java` and click the report printed in the console at the end.
-If successful, the generated HTML report should display a green bar like this:
+### Run the Load Tests
+- [▶️ Run LoadTest](src/test/java/LoadTest.java), and click the links printed at the end  
+- Inspect the generated Gatling report, looking like this:
 ![img.png](art/gatling.png)
+- Study the flamegraph by opening this link: http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
 
-Note: We are using an artificial 'closed' load test model:
-(the number of users if fixed)
-
-## See the flamegraph
-Go to http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
-
-## Optimization steps
+### Optimization steps
 1. Avoid useless network call from @Aspect
    - restTemplate.getForObject sometimes does not have to run: reorder lines
    - Observe: the time spent in the aspect is gone
@@ -63,6 +42,9 @@ Go to http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
    - Observe: time is spent to acquire a connection from the Apache Http connection pool
    - Remove `feign.httpclient.max-connections-per-route` from application.properties
 
-
+### Add the open-telemetry agent (optional: requires local Docker)
+- Start the monitoring-otel docker compose
+- Download the OTEL agent from [https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases](here)
+- Add to your VM options: `-javaagent:/path/to/opentelemetry-javaagent.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500`
 
 Import https://grafana.com/grafana/dashboards/19004-spring-boot-statistics/
