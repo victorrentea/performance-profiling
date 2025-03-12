@@ -34,16 +34,18 @@ public class LoanService /*extends NeverDoThis*/ {
 
   @SneakyThrows
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    log.info("Loan: {}", loanId); // Fix#1
+    log.info("LoanX: {}", loanId); // Fix#1
 
-//    ExecutorService threadPool = Executors.newFixedThreadPool(1);
+    ExecutorService threadPool = Executors.newFixedThreadPool(1); //1 STUPID: overhead each call
+    // FATAL: I lost the traceId because I used a second thread from a thread pool which was not decorated
+    //  to propagate TraceID correctly from parent thread to worker thread.
 
-//    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
+    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
 
     LoanApplication loan = loanApplicationRepo.findByIdLoadingSteps(loanId);
 
-    return new LoanApplicationDto(loan,comments);
+    threadPool.shutdown(); // FATAL: leads to out of memory. pool started by a request is never closed
+    return new LoanApplicationDto(loan, futureComments.get());
   }
 
   private final AuditRepo auditRepo;
