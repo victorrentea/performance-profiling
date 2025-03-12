@@ -13,7 +13,7 @@ public class StartDatabase {
 		System.out.println("✅ DB Started. You can connect to it using sa:sa at jdbc:h2:tcp://localhost:9092/~/test");
 
 		System.out.println("\nStarting DB Proxy ...");
-		StartDatabaseProxy proxy = new StartDatabaseProxy("localhost", 9092, 19092, 3);
+		StartDatabaseProxy proxy = new StartDatabaseProxy("localhost", 9092, 19092, 5);
 		CompletableFuture.runAsync(proxy::run);
 		System.out.println("✅ DB Proxy Started. Traffic delayed to jdbc:h2:tcp://localhost:19092/~/test");
 	}

@@ -36,13 +36,14 @@ public class LoanService /*extends NeverDoThis*/ {
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("Loan: {}", loanId); // Fix#1
 
-    ExecutorService threadPool = Executors.newFixedThreadPool(2);
+//    ExecutorService threadPool = Executors.newFixedThreadPool(1);
 
-    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
+//    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
 
-    Future<LoanApplication> futureLoan = threadPool.submit(() -> loanApplicationRepo.findByIdLoadingSteps(loanId));
+    LoanApplication loan = loanApplicationRepo.findByIdLoadingSteps(loanId);
 
-    return new LoanApplicationDto(futureLoan.get(), futureComments.get());
+    return new LoanApplicationDto(loan,comments);
   }
 
   private final AuditRepo auditRepo;
