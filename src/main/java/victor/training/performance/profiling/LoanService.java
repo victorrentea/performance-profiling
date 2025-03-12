@@ -4,11 +4,11 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import victor.training.performance.helper.Sleep;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -37,6 +37,8 @@ public class LoanService /*extends NeverDoThis*/ {
 
     CompletableFuture<LoanApplication> futureLoanFromDB = findLoan(loanId);
 
+//    auditToInsert
+
     // webFlux equivalent would be
     // monoA.zipWith(monoB, (a,b) -> new LoanApplicationDto(a,b))
     return futureLoanFromDB.thenCombine(
@@ -44,8 +46,13 @@ public class LoanService /*extends NeverDoThis*/ {
         (loan, comments) -> new LoanApplicationDto(loan, comments));
   }
 
+  RestTemplate e;
+
   private CompletableFuture<LoanApplication> findLoan(Long loanId) {
-    return CompletableFuture.supplyAsync(() -> loanApplicationRepo.findByIdLoadingSteps(loanId), myExecutor);
+    return CompletableFuture.supplyAsync(() -> {
+      Sleep.millis(1000); //add brutal sleep to prove concurrency benefit
+      return loanApplicationRepo.findByIdLoadingSteps(loanId);
+    }, myExecutor);
   }
 
   private CompletableFuture<List<CommentDto>> getFetchComments(Long loanId) {
@@ -57,17 +64,13 @@ public class LoanService /*extends NeverDoThis*/ {
 //        .uri(baseUrl+"loan-comments/{id}",loanId)
 //        .retrieve()
 //        .entityToMono(CommentDto.class)
-//        .toFuture();
+//        .toFuture(); // A) break out of Reactive Stream world back into COmpletableFuture ("promise-style")
+//        .block(); // B) hang this thread until the result is available
     return CompletableFuture.supplyAsync(() -> {
-      log.info("Where am I ?");
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-      log.info("Where am I after ?");
+      log.info("In what thread am I ?");
+      Sleep.millis(1000); //add brutal sleep to prove concurrency benefit
       return commentsApiClient.fetchComments(loanId);
-    },myExecutor);
+    }, myExecutor);
   }
 // parallel on Mar 12 at 3:34 I got 47 ms
 // sequential on Mar 12 at 3:34 I got 54 ms
