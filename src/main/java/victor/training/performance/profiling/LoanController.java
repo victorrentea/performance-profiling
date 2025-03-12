@@ -7,6 +7,9 @@ import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.lang.System.currentTimeMillis;
 
 @Slf4j
 @RestController
@@ -15,8 +18,14 @@ public class LoanController {
   private final LoanService loanService;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) {
-    return loanService.getLoanApplication(id);
+  public CompletableFuture<LoanApplicationDto> get(@PathVariable Long id) {
+    long t0 = currentTimeMillis();
+    try {
+      return loanService.getLoanApplication(id);
+    } finally {
+      long t1 = currentTimeMillis();
+      log.info("HTTP Thread released in {} ms", t1 - t0);
+    }
   }
 
   @PostMapping("loan/{title}")

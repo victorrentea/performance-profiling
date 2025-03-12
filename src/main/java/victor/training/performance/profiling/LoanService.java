@@ -4,9 +4,11 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
 import victor.training.performance.profiling.entity.Audit;
@@ -15,14 +17,8 @@ import victor.training.performance.profiling.entity.LoanApplication.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @Service
@@ -34,18 +30,44 @@ public class LoanService /*extends NeverDoThis*/ {
   private final ThreadPoolTaskExecutor myExecutor;
 
   @SneakyThrows
-  public LoanApplicationDto getLoanApplication(Long loanId) {
+  public CompletableFuture<LoanApplicationDto> getLoanApplication(Long loanId) {
     log.info("LoanX: {}", loanId); // Fix#1
 
-    Future<List<CommentDto>> futureComments = myExecutor.submit(() -> getFetchComments(loanId));
+    CompletableFuture<List<CommentDto>> futureCommentsFromAPI = getFetchComments(loanId); // nonblocking (pretend)
 
-    LoanApplication loan = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    return new LoanApplicationDto(loan, futureComments.get());
+    CompletableFuture<LoanApplication> futureLoanFromDB = findLoan(loanId);
+
+    // webFlux equivalent would be
+    // monoA.zipWith(monoB, (a,b) -> new LoanApplicationDto(a,b))
+    return futureLoanFromDB.thenCombine(
+        futureCommentsFromAPI,
+        (loan, comments) -> new LoanApplicationDto(loan, comments));
   }
 
-  private List<CommentDto> getFetchComments(Long loanId) {
+  private CompletableFuture<LoanApplication> findLoan(Long loanId) {
+    return CompletableFuture.supplyAsync(() -> loanApplicationRepo.findByIdLoadingSteps(loanId), myExecutor);
+  }
+
+  private CompletableFuture<List<CommentDto>> getFetchComments(Long loanId) {
     log.info("IN fetch comments");
-    return commentsApiClient.fetchComments(loanId);
+    // non-blocking API call: gives you a CompletableFuture as a result of the call
+    // but it does not BLOCK your thread for any ms.
+    // reactive programming with spring-webflux
+//    CompletableFuture<List<CommentDto>> futureComment = webClient.get()
+//        .uri(baseUrl+"loan-comments/{id}",loanId)
+//        .retrieve()
+//        .entityToMono(CommentDto.class)
+//        .toFuture();
+    return CompletableFuture.supplyAsync(() -> {
+      log.info("Where am I ?");
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      log.info("Where am I after ?");
+      return commentsApiClient.fetchComments(loanId);
+    },myExecutor);
   }
 // parallel on Mar 12 at 3:34 I got 47 ms
 // sequential on Mar 12 at 3:34 I got 54 ms
