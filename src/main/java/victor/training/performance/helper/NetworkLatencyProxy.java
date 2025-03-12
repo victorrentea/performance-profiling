@@ -63,14 +63,14 @@ public class NetworkLatencyProxy {
         return;
       }
 
-      System.out.println("Proxying " + clientsocket.getInetAddress().getHostName() + ":" + clientsocket.getPort() + " <-> " + serverConnection.getInetAddress().getHostName() + ":" + serverConnection.getPort());
+      System.out.println("Proxying " + clientsocket.getInetAddress().getHostName() + ":" + clientsocket.getPort() + " --> " + serverConnection.getInetAddress().getHostName() + ":" + serverConnection.getPort());
 
       new Thread(new CopyDataTask(clientsocket, serverConnection)).start();
       new Thread(new CopyDataTask(serverConnection, clientsocket)).start();
       new Thread(() -> {
         while (true) {
           if (clientsocket.isClosed()) {
-            System.out.println("client socket closed: " + clientsocket.getInetAddress().getHostName() + ":" + clientsocket.getPort());
+//            System.out.println("client socket closed: " + clientsocket.getInetAddress().getHostName() + ":" + clientsocket.getPort());
             closeServerConnection();
             break;
           }
