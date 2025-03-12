@@ -15,18 +15,18 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.function.ServerRequest;
 import victor.training.performance.profiling.ProfiledApp;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.lang.String.join;
 import static java.lang.Thread.sleep;
 import static java.util.Collections.list;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @SpringBootApplication
@@ -48,10 +48,12 @@ public class SecondApp {
 
   public record CommentDto(String body) {
   }
-
+//@Span
   @GetMapping("loan-comments/{id}")
-  public List<CommentDto> getComments() throws InterruptedException {
-    log.info("/loan-comments takes 10 millis");
+  public List<CommentDto> getComments(HttpServletRequest req) throws InterruptedException {
+    Map<String, String> headerValues = Collections.list(req.getHeaderNames()).stream()
+        .collect(toMap(h -> h, req::getHeader));
+    log.info("/loan-comments takes 10 millis : " + headerValues);
     sleep(10);
     return List.of(new CommentDto("LGTM!"), new CommentDto("NACK!"));
   }

@@ -2,6 +2,7 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
@@ -28,24 +32,17 @@ public class LoanService /*extends NeverDoThis*/ {
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
 
-  // @Transactional // i only READ data. no need for ACID features here.
+  @SneakyThrows
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = meterRegistry.timer("commentsapi2").record(() ->
-        commentsApiClient.fetchComments(loanId)); // 45%
+    log.info("Loan: {}", loanId); // Fix#1
 
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 55%
-    LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
+    ExecutorService threadPool = Executors.newFixedThreadPool(2);
 
-//    log.trace("Loan app: " + loanApplication); // can cause lazy loading with a poor impl of toString
+    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
 
-//    log.trace("Loan app: {}", ()-> jsonify(loanApplication)); // Avoid
+    Future<LoanApplication> futureLoan = threadPool.submit(() -> loanApplicationRepo.findByIdLoadingSteps(loanId));
 
-//    if (log.isTraceEnabled()) { // if (trace) only if you call an expensive method while formatting the string
-//      log.trace("Loan app: {}", jsonify(loanApplication)); // 13% time
-//    }
-
-    log.trace("Loan app: {}", loanApplication); // Fix#1
-    return dto;
+    return new LoanApplicationDto(futureLoan.get(), futureComments.get());
   }
 
   private final AuditRepo auditRepo;
