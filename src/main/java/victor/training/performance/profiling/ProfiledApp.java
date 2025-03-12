@@ -3,13 +3,16 @@ package victor.training.performance.profiling;
 import io.micrometer.context.ContextSnapshot;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.contextpropagation.ObservationThreadLocalAccessor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
@@ -17,7 +20,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskDecorator;
+import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -57,6 +62,34 @@ public class ProfiledApp implements WebMvcConfigurer {
   @Bean // propagate tracing over all Spring-managed thread pools
   public TaskDecorator taskDecorator() {
     return (runnable) -> ContextSnapshot.captureAll().wrap(runnable);
+  }
+
+
+  @Bean
+  @ConfigurationProperties("my.executor")
+  public ThreadPoolTaskExecutor myExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setTaskDecorator(new ContextPropagatingTaskDecorator()); // propagate the traceId from parent thread to worker thread
+//    new ContextPropagatingTaskDecorator()
+//    executor.setTaskDecorator(new TaskDecorator() {
+//      @Override
+//      public Runnable decorate(Runnable runnable) {
+//        // runs in the thread doing submit()
+//        var contextMap = MDC.getCopyOfContextMap();
+//
+//        return () -> {
+//          // runs in the worker thread
+//          try {
+//            MDC.setContextMap(contextMap);
+//            runnable.run();
+//          } finally {
+//            MDC.clear();
+//          }
+//        };
+//      }
+//    });
+    executor.initialize();
+    return executor;
   }
 
   @Order

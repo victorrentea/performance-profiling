@@ -41,8 +41,8 @@ public class SecondApp {
 
   @GetMapping("jurisdiction")
   public String getJurisdiction() throws InterruptedException {
-    log.info("/jurisdiction takes 20 millis");
-    sleep(20);
+    log.info("/jurisdiction takes 40 millis");
+    sleep(40);
     return "ADMIN";
   }
 
@@ -53,8 +53,8 @@ public class SecondApp {
   public List<CommentDto> getComments(HttpServletRequest req) throws InterruptedException {
     Map<String, String> headerValues = Collections.list(req.getHeaderNames()).stream()
         .collect(toMap(h -> h, req::getHeader));
-    log.info("/loan-comments takes 10 millis : " + headerValues);
-    sleep(10);
+    log.info("/loan-comments takes 40 millis : " + headerValues);
+    sleep(40);
     return List.of(new CommentDto("LGTM!"), new CommentDto("NACK!"));
   }
 

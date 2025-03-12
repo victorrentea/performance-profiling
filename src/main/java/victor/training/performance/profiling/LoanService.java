@@ -31,22 +31,24 @@ public class LoanService /*extends NeverDoThis*/ {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
+  private final ThreadPoolTaskExecutor myExecutor;
 
   @SneakyThrows
   public LoanApplicationDto getLoanApplication(Long loanId) {
     log.info("LoanX: {}", loanId); // Fix#1
 
-    ExecutorService threadPool = Executors.newFixedThreadPool(1); //1 STUPID: overhead each call
-    // FATAL: I lost the traceId because I used a second thread from a thread pool which was not decorated
-    //  to propagate TraceID correctly from parent thread to worker thread.
-
-    Future<List<CommentDto>> futureComments = threadPool.submit(() -> commentsApiClient.fetchComments(loanId));
+    Future<List<CommentDto>> futureComments = myExecutor.submit(() -> getFetchComments(loanId));
 
     LoanApplication loan = loanApplicationRepo.findByIdLoadingSteps(loanId);
-
-    threadPool.shutdown(); // FATAL: leads to out of memory. pool started by a request is never closed
     return new LoanApplicationDto(loan, futureComments.get());
   }
+
+  private List<CommentDto> getFetchComments(Long loanId) {
+    log.info("IN fetch comments");
+    return commentsApiClient.fetchComments(loanId);
+  }
+// parallel on Mar 12 at 3:34 I got 47 ms
+// sequential on Mar 12 at 3:34 I got 54 ms
 
   private final AuditRepo auditRepo;
 
