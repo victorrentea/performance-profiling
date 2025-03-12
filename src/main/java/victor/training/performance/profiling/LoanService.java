@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class LoanService /*extends NeverDoThis*/ {
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
   private final ThreadPoolTaskExecutor myExecutor;
+  private final AuditService auditService;
 
   @SneakyThrows
   public CompletableFuture<LoanApplicationDto> getLoanApplication(Long loanId) {
@@ -37,16 +39,23 @@ public class LoanService /*extends NeverDoThis*/ {
 
     CompletableFuture<LoanApplication> futureLoanFromDB = findLoan(loanId);
 
-//    auditToInsert
+    // call it in fire-and-forget style (in the background)
+    // Q1: how to track completion & errors?
+//    insertAudit();
+//    myExecutor.submit(() -> insertAudit());
+//    CompletableFuture.runAsync(() -> insertAudit(), myExecutor)
+//        .exceptionally(e->{
+//          log.error("Error in audit", e);
+//          return null;
+//        }); // same as above
+    auditService.insertAudit();
 
     // webFlux equivalent would be
     // monoA.zipWith(monoB, (a,b) -> new LoanApplicationDto(a,b))
     return futureLoanFromDB.thenCombine(
         futureCommentsFromAPI,
-        (loan, comments) -> new LoanApplicationDto(loan, comments));
+        LoanApplicationDto::new);
   }
-
-  RestTemplate e;
 
   private CompletableFuture<LoanApplication> findLoan(Long loanId) {
     return CompletableFuture.supplyAsync(() -> {

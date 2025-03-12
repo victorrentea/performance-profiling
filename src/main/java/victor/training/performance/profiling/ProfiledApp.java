@@ -22,6 +22,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.core.task.support.ContextPropagatingTaskDecorator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -34,6 +35,7 @@ import java.sql.SQLException;
 import static java.lang.System.currentTimeMillis;
 
 @Slf4j
+@EnableAsync
 @SpringBootApplication
 @EnableFeignClients
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
@@ -70,6 +72,8 @@ public class ProfiledApp implements WebMvcConfigurer {
   public ThreadPoolTaskExecutor myExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setTaskDecorator(new ContextPropagatingTaskDecorator()); // propagate the traceId from parent thread to worker thread
+    executor.setWaitForTasksToCompleteOnShutdown(true);
+
 //    new ContextPropagatingTaskDecorator()
 //    executor.setTaskDecorator(new TaskDecorator() {
 //      @Override
