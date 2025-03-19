@@ -80,12 +80,14 @@ public class LoanService {
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   // called by 1 of the 200 *(default) threads of Tomcat
-  public synchronized Status getLoanStatus(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
+  public  Status getLoanStatus(Long loanId) {
+    synchronized (this) {
+      LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+      return loanApplication.getCurrentStatus();
+    }
   }
 
   private final ThreadPoolTaskExecutor executor;
