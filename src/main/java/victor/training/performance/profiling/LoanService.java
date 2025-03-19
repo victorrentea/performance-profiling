@@ -36,12 +36,18 @@ public class LoanService {
   public LoanApplicationDto getLoanApplication(Long loanId) {
     // TODO use JFR Events to monitor waiting time in queue of a thread pool
     // threadPool.submit(() -> work());
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // long and less certain 35%
+    List<CommentDto> comments =
+        meterRegistry.timer("fetch_comments_from_api").record(() -> // #2 FP style
+          commentsApiClient.fetchComments(loanId) // long and less certain 35%
+    );
 
+    if (comments.isEmpty()) {
+      meterRegistry.counter("loan_without_comments").increment();
+    }
     Timer timer = meterRegistry.timer("find_loan_sql");
-    long t0 = currentTimeMillis();
+    long t0 = currentTimeMillis(); // #1 high-school : avoid
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    long t1 = currentTimeMillis();
+    long t1 = currentTimeMillis(); // use only if this is collected in another thead (callback-style)
     timer.record(Duration.ofMillis(t1 - t0));
 
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
@@ -73,8 +79,9 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  // called by 1 of the 200 *(default) threads of Tomcat
   public synchronized Status getLoanStatus(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
+    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
     recentLoanStatusQueried.add(loanId);
     while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);

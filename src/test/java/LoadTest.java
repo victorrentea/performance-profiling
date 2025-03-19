@@ -15,6 +15,7 @@ public class LoadTest extends Simulation {
     setUp(scenario(getClass().getSimpleName())
         .exec(http("").get("/loan/1"))
         // 23 threads will fire requests in a loop
+        // vs rps= 10/second, but 1 task takes ~10seconds = 100 parallel tasks = like real workd
         .injectClosed(constantConcurrentUsers(23)
             .during(ofSeconds(8))))
         .protocols(http.baseUrl("http://localhost:8080"))

@@ -13,7 +13,7 @@ import java.util.List;
 @FeignClient("loan-comments")
 public interface CommentsApiClient {
 
-  @Timed
+  @Timed // #3 AOP style (proxy-based)
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable("id") Long id);
 }
