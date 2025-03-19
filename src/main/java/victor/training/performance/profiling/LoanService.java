@@ -21,21 +21,21 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // long and less certain 35%
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // less 50% due to JDBC Conn Pool Starvation
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+    log.trace("Loan app: " + loanApplication); // 15% due to Lazy Loading of Hibernate
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));

@@ -29,7 +29,7 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object responseDto = pjp.proceed();
+    Object responseDto = pjp.proceed(); // the intended call
     if (responseDto == null) {
       return null;
     }
@@ -37,12 +37,14 @@ public class GDPRAspect {
       return responseDto;
     }
 
-    String userRole = fetchUserRole(); // network call
-
     List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
+    String userRole = fetchUserRole(); // network call
+    // and/or:
+    // - caching 5min
+    // - unpack the JWT in the header of an HTTR req received by a BE system
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 

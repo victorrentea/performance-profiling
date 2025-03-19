@@ -2,6 +2,7 @@
 
 ### Install Lombok
 If necessary using https://www.baeldung.com/lombok-ide
+
 ### Start the Database
 - [▶️ Run StartDatabase](src/main/java/victor/training/performance/helper/StartDatabase.java) to start a standalone in-memory H2 database running at `jdbc:h2:tcp://localhost:9092/~/test` (user=`sa`, password=`sa`).
 - Traffic to database will be delayed by a [network proxy](src/main/java/victor/training/performance/helper/NetworkLatencyProxy.java) started on port `19092`. 
