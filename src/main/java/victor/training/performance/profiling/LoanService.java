@@ -17,8 +17,6 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -76,16 +74,12 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried = Collections.synchronizedList(new ArrayList<>());
+  BoundedList recentLoanStatusQueried = new BoundedList(10);
 
   // called by 1 of the 200 *(default) threads of Tomcat
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
-
-      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-      recentLoanStatusQueried.add(loanId);
-      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-
+    recentLoanStatusQueried.add(loanId);
     return loanApplication.getCurrentStatus();
   }
 
@@ -94,8 +88,10 @@ public class LoanService {
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
-      return new ArrayList<>(recentLoanStatusQueried);
+    return recentLoanStatusQueried.getACopy();
 
   }
+
+
 
 }
