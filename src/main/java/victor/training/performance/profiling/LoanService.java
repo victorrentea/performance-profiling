@@ -1,6 +1,8 @@
 package victor.training.performance.profiling;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +17,13 @@ import victor.training.performance.profiling.entity.LoanApplication.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+
+import static java.lang.System.currentTimeMillis;
 
 @Slf4j
 @Service
@@ -26,14 +31,18 @@ import java.util.logging.Logger;
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final MeterRegistry meterRegistry;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
     // TODO use JFR Events to monitor waiting time in queue of a thread pool
     // threadPool.submit(() -> work());
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // long and less certain 35%
 
+    Timer timer = meterRegistry.timer("find_loan_sql");
+    long t0 = currentTimeMillis();
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    // less 50% due to JDBC Conn Pool Starvation
+    long t1 = currentTimeMillis();
+    timer.record(Duration.ofMillis(t1 - t0));
 
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
 
