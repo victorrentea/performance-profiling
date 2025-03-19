@@ -47,4 +47,13 @@ public class LoanApplication {
     }
   }
 
+  @Override
+  public String toString() {
+    return "LoanApplication{" +
+           "id=" + id +
+           ", title='" + title + '\'' +
+           ", steps=" + steps +
+           ", beneficiaries=" + beneficiaries +
+           '}';
+  }
 }

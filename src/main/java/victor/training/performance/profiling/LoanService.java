@@ -1,5 +1,6 @@
 package victor.training.performance.profiling;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 @Slf4j
 @Service
@@ -29,8 +31,22 @@ public class LoanService {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // long and less certain 35%
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // less 50% due to JDBC Conn Pool Starvation
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication); // 15% due to Lazy Loading of Hibernate
+
+//    log.trace("Loan app: " + loanApplication); // 15% due to Lazy Loading of Hibernate
+    log.trace("Loan app: {}", loanApplication);//💖best
+//    log.trace("Loan app: {}", jsonify(loanApplication));//BAD call to jsonify still gets called
+//    if (log.isTraceEnabled()) log.trace("Loan app: {}", jsonify(loanApplication));
+//    //Logger.getLogger().log(()->"print me");
     return dto;
+  }
+
+  private String jsonify(LoanApplication loanApplication) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.writeValueAsString(loanApplication);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private final AuditRepo auditRepo;
