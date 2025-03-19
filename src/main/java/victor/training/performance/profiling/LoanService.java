@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -38,8 +36,8 @@ public class LoanService {
     // threadPool.submit(() -> work());
     List<CommentDto> comments =
         meterRegistry.timer("fetch_comments_from_api").record(() -> // #2 FP style
-          commentsApiClient.fetchComments(loanId) // long and less certain 35%
-    );
+            commentsApiClient.fetchComments(loanId) // long and less certain 35%
+        );
 
     if (comments.isEmpty()) {
       meterRegistry.counter("loan_without_comments").increment();
@@ -80,14 +78,14 @@ public class LoanService {
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
   // called by 1 of the 200 *(default) threads of Tomcat
-  public  Status getLoanStatus(Long loanId) {
-    synchronized (this) {
-      LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
+  public Status getLoanStatus(Long loanId) {
+    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow(); // high latency
+    synchronized (this) { // ALWAYS shrink the critical section to the minimum
       recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(loanId);
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-      return loanApplication.getCurrentStatus();
     }
+    return loanApplication.getCurrentStatus();
   }
 
   private final ThreadPoolTaskExecutor executor;
