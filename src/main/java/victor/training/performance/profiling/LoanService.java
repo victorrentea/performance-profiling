@@ -93,7 +93,9 @@ public class LoanService {
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
-    return new ArrayList<>(recentLoanStatusQueried);
+    synchronized (this) {
+      return new ArrayList<>(recentLoanStatusQueried);
+    }
   }
 
 }
