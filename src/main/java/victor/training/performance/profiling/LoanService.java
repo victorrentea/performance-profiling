@@ -28,12 +28,17 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
+    // TODO use JFR Events to monitor waiting time in queue of a thread pool
+    // threadPool.submit(() -> work());
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // long and less certain 35%
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // less 50% due to JDBC Conn Pool Starvation
+
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    // less 50% due to JDBC Conn Pool Starvation
+
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
 
-//    log.trace("Loan app: " + loanApplication); // 15% due to Lazy Loading of Hibernate
-    log.trace("Loan app: {}", loanApplication);//💖best
+    log.trace("Loan app: " + loanApplication); // 15% due to Lazy Loading of Hibernate
+//    log.trace("Loan app: {}", loanApplication);//💖best
 //    log.trace("Loan app: {}", jsonify(loanApplication));//BAD call to jsonify still gets called
 //    if (log.isTraceEnabled()) log.trace("Loan app: {}", jsonify(loanApplication));
 //    //Logger.getLogger().log(()->"print me");
