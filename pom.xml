@@ -63,6 +63,12 @@
             <artifactId>micrometer-registry-jmx</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.noconnor</groupId>
+            <artifactId>junitperf-junit5</artifactId>
+            <scope>test</scope>
+            <version>1.37.0</version>
+        </dependency>
         <!-- A) monitoring-plain: https://zipkin.io/ -->
        <!--
         <dependency>

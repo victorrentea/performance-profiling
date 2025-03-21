@@ -19,6 +19,7 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -30,13 +31,15 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
 
-  public LoanApplicationDto getLoanApplication(Long loanId) {
+  public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
     // TODO use JFR Events to monitor waiting time in queue of a thread pool
     // threadPool.submit(() -> work());
     List<CommentDto> comments =
-        meterRegistry.timer("fetch_comments_from_api").record(() -> // #2 FP style
-            commentsApiClient.fetchComments(loanId) // long and less certain 35%
-        );
+        CompletableFuture.supplyAsync( () ->
+          meterRegistry.timer("fetch_comments_from_api").record(() -> // #2 FP style
+              commentsApiClient.fetchComments(loanId) // long and less certain 35%
+          )
+      ).get();
 
     if (comments.isEmpty()) {
       meterRegistry.counter("loan_without_comments").increment();
