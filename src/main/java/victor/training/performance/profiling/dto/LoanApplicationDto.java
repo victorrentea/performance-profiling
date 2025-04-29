@@ -18,7 +18,7 @@ public class LoanApplicationDto {
   public LoanApplicationDto(LoanApplication loanApplication, List<CommentDto> comments) {
     id = loanApplication.getId();
     title = loanApplication.getTitle();
-    globalStatus = loanApplication.getCurrentStatus();
+    globalStatus = loanApplication.getCurrentStatus(); // uses .steps
     this.comments = comments.stream().map(CommentDto::body).collect(toList());
   }
 }
