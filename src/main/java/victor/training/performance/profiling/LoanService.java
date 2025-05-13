@@ -21,34 +21,58 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
+
+//  @Transactional (readOnly = true)// used to tell RountingDataSource to use
+  // the JDBC Connec Pool optimized for reading,
+  // make sure that by deault CrudRepo uses the read conn
+
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 10ms 40%
+    // if the REST API call took 100ms, we won't see a problem in our exp. as most of our latency is spent on API call
+    // above true for closed world 23
+    // open world: requests/sec, the above doesnt change the problem
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 50%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+//    log.trace("Loan app: " + loanApplication); // 10% = JPA lazy loading
+    log.trace("Loan app: {}", loanApplication); //
+
+//    if (log.isTraceEnabled()) log.trace("Loan app: " + toJson(loanApplication)); //
+//    log.atTrace().log(()->"Loan app: " + toJson(loanApplication));
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
+//    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // takes ±40ms
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  public synchronized Status getLoanStatus(Long loanId) {
-    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
-    return loanApplication.getCurrentStatus();
+
+  // Redis semaphore
+  // SELECT for UPDATE = row / LOCK TABLE = table
+
+  // new Semaphore()
+  // new Barrier()
+  // new ReentrantLock()
+  // the above DONT SHOW UP as Java Monitor locks
+
+  public Status getLoanStatus(Long loanId) {
+    synchronized (this) {
+      LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
+      recentLoanStatusQueried.remove(loanId); // remove it BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId); // to add it again at the end
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0); // ensure list size <= 10
+      return loanApplication.getCurrentStatus();
+    }
   }
 
   private final ThreadPoolTaskExecutor executor;
