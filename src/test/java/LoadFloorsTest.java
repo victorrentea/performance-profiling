@@ -18,6 +18,7 @@ public class LoadFloorsTest extends Simulation {
             constantConcurrentUsers(25).during(5),
             constantConcurrentUsers(30).during(5)
           ))
+        // a bit more controlled than ramp test
 
         .protocols(http.baseUrl(host));
   }
