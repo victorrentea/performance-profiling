@@ -55,7 +55,7 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private final BoundedList<Long> recentLoanIdQueried = new BoundedList<>();
 
   // Redis semaphore
   // SELECT for UPDATE = row / LOCK TABLE = table
@@ -67,11 +67,7 @@ public class LoanService {
 
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    synchronized (this) {
-      recentLoanStatusQueried.remove(loanId); // remove it BUG#7235 - avoid duplicates in list
-      recentLoanStatusQueried.add(loanId); // to add it again at the end
-      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0); // ensure list size <= 10
-    }
+    recentLoanIdQueried.add(loanId);
     return loanApplication.getCurrentStatus();
   }
 
@@ -84,9 +80,10 @@ public class LoanService {
 //    return recentLoanStatusQueried; // wrong! later traversal (eg jackson serialization) might cause
     // ConcurrentModificationException
 
-    synchronized (this) {
-      return new ArrayList<>(recentLoanStatusQueried);
-    }
+//    synchronized (this) {
+//      return new ArrayList<>(recentLoanStatusQueried);
+//    }
+    return recentLoanIdQueried.getAll();
   }
 
 }
