@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toSet;
 
 // in real life, microbenchmark using  Java Measuring Harness (JMH)
-public class HotMethodNaiveBenchTest {
+public class HotMethodTest {
   @Test
   void fast() {
     Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
