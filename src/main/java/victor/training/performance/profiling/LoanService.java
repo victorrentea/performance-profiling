@@ -15,6 +15,7 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanApplicationRepo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,7 +55,7 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanStatusQueried = new ArrayList<>();
+  private final List<Long> recentLoanStatusQueried = Collections.synchronizedList(new ArrayList<>());
 
 
   // Redis semaphore
@@ -67,11 +68,11 @@ public class LoanService {
 
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    synchronized (this) {
-      recentLoanStatusQueried.remove(loanId); // remove it BUG#7235 - avoid duplicates in list
-      recentLoanStatusQueried.add(loanId); // to add it again at the end
-      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0); // ensure list size <= 10
-    }
+//    synchronized (this) {
+    recentLoanStatusQueried.remove(loanId); // remove it BUG#7235 - avoid duplicates in list
+    recentLoanStatusQueried.add(loanId); // to add it again at the end
+    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0); // ensure list size <= 10
+//    }
     return loanApplication.getCurrentStatus();
   }
 
