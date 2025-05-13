@@ -39,7 +39,7 @@ public class LoanService {
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 50%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
 //    log.trace("Loan app: " + loanApplication); // 10% = JPA lazy loading
-    log.trace("Loan app: {}", loanApplication); //
+    log.info("Loan app: {}", loanApplication); //
 
 //    if (log.isTraceEnabled()) log.trace("Loan app: " + toJson(loanApplication)); //
 //    log.atTrace().log(()->"Loan app: " + toJson(loanApplication));

@@ -46,6 +46,11 @@ public class GDPRAspect {
     // 5 y ago the role was loaded from the USERS table in my DB
     String userRole = fetchUserRole(); // 10% network call
 
+    // better: take roles from SecurityContext, where they got from
+    // a) HTTP session if facing a Browser
+    // b) from JWT claims w/o a network call if using asym dig signed tokens
+    // Idea: avoid network call.
+
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 
