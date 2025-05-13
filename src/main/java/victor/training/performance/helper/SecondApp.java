@@ -32,30 +32,16 @@ import static java.util.stream.Collectors.joining;
 @SpringBootApplication
 @RestController
 public class SecondApp {
-  public static void main(String[] args) {
-    // run this with VM Options:  -javaagent:/Users/victorrentea/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dspring.application.name=second-app
-    System.setProperty("server.port", "9999");
-    SpringApplication.run(SecondApp.class, args);
-  }
-
-
-  @GetMapping("jurisdiction")
-  public String getJurisdiction() throws InterruptedException {
-    log.info("/jurisdiction takes 20 millis");
-    sleep(20);
-    return "ADMIN";
-  }
-
   public record CommentDto(String body) {
-  }
 
+
+  }
   @GetMapping("loan-comments/{id}")
   public List<CommentDto> getComments() throws InterruptedException {
     log.info("/loan-comments takes 10 millis");
     sleep(10);
     return List.of(new CommentDto("LGTM!"), new CommentDto("NACK!"));
   }
-
   @EventListener(ApplicationStartedEvent.class)
   public void printAppStarted() {
     log.info("""
@@ -65,10 +51,18 @@ public class SecondApp {
         """);
   }
 
+  @GetMapping("jurisdiction")
+  public String getJurisdiction() throws InterruptedException {
+    log.info("/jurisdiction takes 20 millis");
+    sleep(20);
+    return "ADMIN";
+  }
+
   @Slf4j
 //@Component // use for debugging incoming headers
   @Order(SecurityProperties.DEFAULT_FILTER_ORDER - 1000) // run in before Spring's Security Filter Chain
   public static class HeaderPrinterFilter extends HttpFilter {
+
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
       log.info("\nRequest Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(list(request.getHeaderNames()), name -> list(request.getHeaders(name))));
@@ -82,6 +76,12 @@ public class SecondApp {
           .map(name -> "\t" + name + ": " + join("; ", valueByName.apply(name)))
           .collect(joining("\n"));
     }
+
   }
 
+  public static void main(String[] args) {
+    // run this with VM Options:  -javaagent:/Users/victorrentea/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dspring.application.name=second-app
+    System.setProperty("server.port", "9999");
+    SpringApplication.run(SecondApp.class, args);
+  }
 }
