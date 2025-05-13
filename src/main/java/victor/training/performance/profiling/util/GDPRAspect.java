@@ -19,6 +19,7 @@ import java.util.List;
 @Slf4j
 @Component
 @Aspect
+// written by the Spring expert that left the team
 public class GDPRAspect {
   private final RestTemplate restTemplate;
 
@@ -29,7 +30,7 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object responseDto = pjp.proceed();
+    Object responseDto = pjp.proceed(); // 90%
     if (responseDto == null) {
       return null;
     }
@@ -37,19 +38,21 @@ public class GDPRAspect {
       return responseDto;
     }
 
-    String userRole = fetchUserRole(); // network call
-
     List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
+
+    // 5 y ago the role was loaded from the USERS table in my DB
+    String userRole = fetchUserRole(); // 10% network call
+
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 
     return responseDto;
   }
 
-  private String fetchUserRole() {
+  private String fetchUserRole() { // a jr changed the SELECT to an API call 1y after the expert left
     try {
       return restTemplate.getForObject("http://localhost:9999/jurisdiction", String.class);
     } catch (RestClientException e) {
