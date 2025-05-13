@@ -13,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import victor.training.performance.profiling.ProfiledApp;
@@ -66,7 +67,7 @@ public class SecondApp {
   }
 
   @Slf4j
-//@Component // use for debugging incoming headers
+@Component // use for debugging incoming headers
   @Order(SecurityProperties.DEFAULT_FILTER_ORDER - 1000) // run in before Spring's Security Filter Chain
   public static class HeaderPrinterFilter extends HttpFilter {
     @Override

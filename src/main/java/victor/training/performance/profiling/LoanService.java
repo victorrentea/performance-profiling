@@ -27,22 +27,11 @@ public class LoanService {
   private final CommentsApiClient commentsApiClient;
 
 
-//  @Transactional (readOnly = true)// used to tell RountingDataSource to use
-  // the JDBC Connec Pool optimized for reading,
-  // make sure that by deault CrudRepo uses the read conn
-
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 10ms 40%
-    // if the REST API call took 100ms, we won't see a problem in our exp. as most of our latency is spent on API call
-    // above true for closed world 23
-    // open world: requests/sec, the above doesnt change the problem
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 50%
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-//    log.trace("Loan app: " + loanApplication); // 10% = JPA lazy loading
     log.info("Loan app: {}", loanApplication); //
-
-//    if (log.isTraceEnabled()) log.trace("Loan app: " + toJson(loanApplication)); //
-//    log.atTrace().log(()->"Loan app: " + toJson(loanApplication));
     return dto;
   }
 
