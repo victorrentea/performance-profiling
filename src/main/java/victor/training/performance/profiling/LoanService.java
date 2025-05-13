@@ -26,19 +26,21 @@ import java.util.concurrent.ExecutionException;
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final ThreadPoolTaskExecutor executor;
+
 
   public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
     // using CompletableFuture#..Async(,springDecoratedExecutor) !!! past pass the 2nd arg
     var futureComments = CompletableFuture.supplyAsync(
-        () -> commentsApiClient.fetchComments(loanId));
+        () -> commentsApiClient.fetchComments(loanId), executor);
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 50%
     var comments = futureComments.get();
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
     log.info("Loan app: {}", loanApplication);
     return dto;
   }
-
   private final AuditRepo auditRepo;
+
 
   @Transactional
   public void saveLoanApplication(String title) {
@@ -46,7 +48,6 @@ public class LoanService {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
   }
-
   private final BoundedList<Long> recentLoanIdQueried = new BoundedList<>();
 
   // Redis semaphore
@@ -57,13 +58,12 @@ public class LoanService {
   // new ReentrantLock()
   // the above DONT SHOW UP as Java Monitor locks
 
+
   public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanIdQueried.add(loanId);
     return loanApplication.getCurrentStatus();
   }
-
-  private final ThreadPoolTaskExecutor executor;
 
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");

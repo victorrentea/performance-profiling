@@ -74,7 +74,7 @@ public class SecondApp {
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
       log.info("\nRequest Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(list(request.getHeaderNames()), name -> list(request.getHeaders(name))));
       chain.doFilter(request, response);
-      log.info("\nResponse Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(response.getHeaderNames(), response::getHeaders));
+//      log.info("\nResponse Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(response.getHeaderNames(), response::getHeaders));
     }
 
     private static String getHeadersAsMap(Collection<String> names, Function<String, Collection<String>> valueByName) {
