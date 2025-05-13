@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Service
@@ -26,12 +27,14 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
-
-  public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 10ms 40%
+  public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
+    // using CompletableFuture#..Async(,springDecoratedExecutor) !!! past pass the 2nd arg
+    var futureComments = CompletableFuture.supplyAsync(
+        () -> commentsApiClient.fetchComments(loanId));
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 50%
+    var comments = futureComments.get();
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.info("Loan app: {}", loanApplication); //
+    log.info("Loan app: {}", loanApplication);
     return dto;
   }
 
