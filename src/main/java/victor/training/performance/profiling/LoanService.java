@@ -66,13 +66,13 @@ public class LoanService {
   // the above DONT SHOW UP as Java Monitor locks
 
   public Status getLoanStatus(Long loanId) {
+    LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     synchronized (this) {
-      LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
       recentLoanStatusQueried.remove(loanId); // remove it BUG#7235 - avoid duplicates in list
       recentLoanStatusQueried.add(loanId); // to add it again at the end
       while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0); // ensure list size <= 10
-      return loanApplication.getCurrentStatus();
     }
+    return loanApplication.getCurrentStatus();
   }
 
   private final ThreadPoolTaskExecutor executor;
