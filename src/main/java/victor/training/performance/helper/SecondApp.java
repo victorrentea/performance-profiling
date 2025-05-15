@@ -9,18 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import victor.training.performance.profiling.ProfiledApp;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import static java.lang.String.join;
@@ -59,18 +57,18 @@ public class SecondApp {
   }
 
   @Slf4j
-//@Component // use for debugging incoming headers
+  @Component // use to debugging incoming headers
   @Order(SecurityProperties.DEFAULT_FILTER_ORDER - 1000) // run in before Spring's Security Filter Chain
-  public static class HeaderPrinterFilter extends HttpFilter {
+  public static class PrintRequestHeadersFilter extends HttpFilter {
 
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-      log.info("\nRequest Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(list(request.getHeaderNames()), name -> list(request.getHeaders(name))));
+      var headersMap = getHeadersString(list(request.getHeaderNames()), name -> list(request.getHeaders(name)));
+      log.info("\nRequest Headers for {}\n{}", request.getRequestURI(), headersMap);
       chain.doFilter(request, response);
-      log.info("\nResponse Headers for " + request.getRequestURI() + "\n" + getHeadersAsMap(response.getHeaderNames(), response::getHeaders));
     }
 
-    private static String getHeadersAsMap(Collection<String> names, Function<String, Collection<String>> valueByName) {
+    private static String getHeadersString(Collection<String> names, Function<String, Collection<String>> valueByName) {
       return names.stream()
           .sorted()
           .map(name -> "\t" + name + ": " + join("; ", valueByName.apply(name)))
