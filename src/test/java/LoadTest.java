@@ -21,10 +21,10 @@ public class LoadTest extends Simulation {
     setUp(scenario(getClass().getSimpleName())
         .exec(http("").get("/loan/1"))
         // 1) Closed World: 23 parallel requests at all times = real issue = easier to reason
-//        .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
+        .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
 
         // 2) Open World: 200 requests / second = closer to real world;
-        .injectOpen(constantUsersPerSec(200f).during(ofSeconds(8))))
+//        .injectOpen(constantUsersPerSec(200f).during(ofSeconds(8))))
         // To convert ~= closedworld.threads/endpoint_latency = 23/100ms = 230rps (eg)
 
         .protocols(http.baseUrl("http://localhost:8080"))
