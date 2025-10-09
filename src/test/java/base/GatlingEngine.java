@@ -1,7 +1,6 @@
 package base;
 
 import io.gatling.app.Gatling;
-import io.gatling.core.config.GatlingPropertiesBuilder;
 import org.awaitility.Awaitility;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +14,9 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -26,12 +28,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class GatlingEngine {
   public static void main(String[] args) {
-    GatlingPropertiesBuilder props = new GatlingPropertiesBuilder()
-        .resourcesDirectory(mavenResourcesDirectory().toString())
-        .resultsDirectory(resultsDirectory().toString())
-        .binariesDirectory(mavenBinariesDirectory().toString());
-    Gatling.fromMap(props.build());
-
+    String[] gatlingArgs = new String[] {
+        "-rf", resultsDirectory().toString()
+    };
+    runGatlingInFork(gatlingArgs);
   }
 
   public static void startClass(Class<?> clazz) {
@@ -41,20 +41,39 @@ public class GatlingEngine {
     // clear JFR after Gatling starts to give time to JVM to warmup
     runAsync(GatlingEngine::clearGlowrootData, delayedExecutor(3, SECONDS));
 
-    GatlingPropertiesBuilder props = new GatlingPropertiesBuilder()
-        .resourcesDirectory(mavenResourcesDirectory().toString())
-        .resultsDirectory(resultsDirectory().toString())
-        .binariesDirectory(mavenBinariesDirectory().toString())
-        .simulationClass(clazz.getCanonicalName());
-
-    int returnCode = Gatling.fromMap(props.build());
-
-    if (returnCode != 0) {
-      System.err.println("❌❌❌ Some Requests were in ERROR ❌❌❌");
+    String[] gatlingArgs = new String[] {
+        "-s", clazz.getCanonicalName(),
+        "-rf", resultsDirectory().toString()
+    };
+    int code = runGatlingInFork(gatlingArgs);
+    if (code != 0) {
+      System.err.println("❌❌❌ Some Requests were in ERROR (exit code=" + code + ") ❌❌❌");
     }
 
     System.out.println("You can access Glowroot at http://localhost:4000");
     System.out.println("Flamegraph🔥🔥🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
+  }
+
+  private static int runGatlingInFork(String[] gatlingArgs) {
+    try {
+      String javaExe = Paths.get(System.getProperty("java.home"), "bin", "java").toString();
+      String classpath = System.getProperty("java.class.path");
+
+      List<String> cmd = new ArrayList<>();
+      cmd.add(javaExe);
+      cmd.add("--add-opens=java.base/java.lang=ALL-UNNAMED");
+      cmd.add("-cp");
+      cmd.add(classpath);
+      cmd.add("io.gatling.app.Gatling");
+      cmd.addAll(Arrays.asList(gatlingArgs));
+
+      Process process = new ProcessBuilder(cmd)
+          .inheritIO()
+          .start();
+      return process.waitFor();
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException("Failed to launch Gatling in forked JVM", e);
+    }
   }
 
   private static void waitForApp() {
