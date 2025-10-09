@@ -1,6 +1,5 @@
 package victor.training.performance.profiling;
 
-import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
 
-  @Observed // TODO visualize
   public LoanApplicationDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
