@@ -3,6 +3,8 @@ package victor.training.performance.profiling;
 import io.micrometer.context.ContextSnapshot;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
+import io.micrometer.observation.aop.ObservedAspect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
@@ -45,8 +47,13 @@ public class ProfiledApp implements WebMvcConfigurer {
   }
 
   @Bean // enables the use of @Timed
-  public TimedAspect timedAspect(MeterRegistry meterRegistry) {
-    return new TimedAspect(meterRegistry);
+  public TimedAspect timedAspect(MeterRegistry registry) {
+    return new TimedAspect(registry);
+  }
+
+  @Bean // enables the use of @Observed
+  public ObservedAspect observedAspect(ObservationRegistry registry) {
+    return new ObservedAspect(registry);
   }
 
   @Bean

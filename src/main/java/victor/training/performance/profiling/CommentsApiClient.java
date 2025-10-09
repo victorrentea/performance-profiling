@@ -1,6 +1,7 @@
 package victor.training.performance.profiling;
 
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +15,7 @@ import java.util.List;
 public interface CommentsApiClient {
 
   @Timed
+  @Observed
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable("id") Long id);
 }
