@@ -1,6 +1,11 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.annotation.Observed;
+import io.micrometer.tracing.Baggage;
+import io.micrometer.tracing.BaggageInScope;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +28,25 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Observed // TODO visualize
 public class LoanService {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
+  private final ObservationRegistry registry;
+  private final Tracer tracer;
 
-  @Observed // TODO visualize
   public LoanApplicationDto getLoanApplication(Long loanId) {
+    try (BaggageInScope scope = this.tracer.createBaggageInScope("baggage1", "value1")) {
+      // Business logic
+    }
+
+    Observation.createNotStarted("user.name", registry)
+        .contextualName("getting-user-name")
+        .lowCardinalityKeyValue("userType", "userType1") // let's assume that you can have 3 user types
+        .highCardinalityKeyValue("userId", "1234") // let's assume that this is an arbitrary number
+        .observe(() -> log.info("Hello")); // this is a shortcut for starting an observation, opening a scope, r
+
+
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
