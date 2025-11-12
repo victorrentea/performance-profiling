@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import victor.training.performance.profiling.dto.LoanApplicationDto;
+import victor.training.performance.profiling.dto.SomeOtherDto;
 import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.time.Duration;
@@ -45,5 +46,12 @@ public class LoanController {
     return loanService.getRecentLoanStatusQueried();
   }
 
+  @GetMapping("gdpr")
+  public SomeOtherDto clearFieldsDemo() {
+    return new SomeOtherDto()
+        .setAuthorName("A B")
+        .setAuthorEmail("a@b.com")
+        .setFeedback("feedback");
+  }
 }
 
