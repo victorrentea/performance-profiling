@@ -1,5 +1,7 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.annotation.Observed;
@@ -36,17 +38,6 @@ public class LoanService {
   private final Tracer tracer;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    try (BaggageInScope scope = this.tracer.createBaggageInScope("baggage1", "value1")) {
-      // Business logic
-    }
-
-    Observation.createNotStarted("user.name", registry)
-        .contextualName("getting-user-name")
-        .lowCardinalityKeyValue("userType", "userType1") // let's assume that you can have 3 user types
-        .highCardinalityKeyValue("userId", "1234") // let's assume that this is an arbitrary number
-        .observe(() -> log.info("Hello")); // this is a shortcut for starting an observation, opening a scope, r
-
-
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
