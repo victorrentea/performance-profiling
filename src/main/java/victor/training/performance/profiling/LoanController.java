@@ -45,5 +45,10 @@ public class LoanController {
     return loanService.getRecentLoanStatusQueried();
   }
 
+
+  @GetMapping("txflush")
+  public void txFlush() {
+    loanService.autoFlushFaraTx();
+  }
 }
 

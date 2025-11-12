@@ -29,20 +29,22 @@ public class GDPRAspect {
 
   @Around("@within(org.springframework.web.bind.annotation.RestController))")
   public Object clearNonVisibleFields(ProceedingJoinPoint pjp) throws Throwable {
-    Object responseDto = pjp.proceed();
+    Object responseDto = pjp.proceed(); // actual call to the intercepted method
     if (responseDto == null) {
       return null;
     }
     if (!responseDto.getClass().getPackageName().startsWith("victor")) {
       return responseDto;
     }
-
-    String userRole = fetchUserRole(); // network call
-
     List<Field> sensitiveFields = getAnnotatedFields(responseDto);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // TODO move earlier
     }
+
+    String userRole = fetchUserRole(); // network call
+    // NO!! Still bad. +1 api call /call?!? WHF@??!?!
+    // Ideal: bring user role within a HTTP request header called
+    // 'Authorization: Bearer <JWT>' {claims: role} validated offline on my side w/o a call to AuthServer (KeyCloak/your own wheel)
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 

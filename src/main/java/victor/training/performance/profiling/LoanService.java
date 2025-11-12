@@ -25,28 +25,33 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+//@Transactional // jr was here / migrated from EJB @Stateless
 @Observed // TODO visualize
-public class LoanService {
+public class LoanService /*extends BaseService*/{
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
   private final ObservationRegistry registry;
   private final Tracer tracer;
 
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
+    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 60% ~10ms--20s = REST API call
+    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 16% ~2..6ms = SELECT -> DB
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-    log.trace("Loan app: " + loanApplication);
+//    log.debug("Loan app: " + loanApplication); // useless toString if level=INFO
+    log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
+//    logU.fine(()->"Loan app: " + loanApplication); // same but JCL not Slf4J
     return dto;
   }
+  Logger logU;
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanApplicationRepo.save(new LoanApplication().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -54,6 +59,7 @@ public class LoanService {
 
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
+  //@Transactional(readOnly = true)
   public synchronized Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
     recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
@@ -68,6 +74,11 @@ public class LoanService {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
     return new ArrayList<>(recentLoanStatusQueried);
+  }
+
+  public void autoFlushFaraTx() {
+    LoanApplication loan = loanApplicationRepo.findById(1L).orElseThrow();
+    loan.setTitle("Altul");
   }
 
 }

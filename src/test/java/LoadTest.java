@@ -6,7 +6,7 @@ import static io.gatling.javaapi.core.CoreDsl.*;
 import static io.gatling.javaapi.http.HttpDsl.http;
 import static java.time.Duration.ofSeconds;
 
-// Gatling vs K6
+// Gatling
 public class LoadTest extends Simulation {
   public static void main(String[] args) {
     GatlingEngine.startClass(LoadTest.class);
