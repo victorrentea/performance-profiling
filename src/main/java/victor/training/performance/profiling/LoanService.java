@@ -2,14 +2,11 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.annotation.Observed;
-import io.micrometer.tracing.Baggage;
-import io.micrometer.tracing.BaggageInScope;
 import io.micrometer.tracing.Tracer;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -37,9 +34,27 @@ public class LoanService /*extends BaseService*/{
   private final CommentsApiClient commentsApiClient;
   private final ObservationRegistry registry;
   private final Tracer tracer;
+  private final MeterRegistry meterRegistry; // micrometer
 
+  @PostConstruct // runs once, at spring startup
+  void onStartup() {
+    // pull-based via callback: at any cal of
+    // http://localhost:8080/actuator/prometheus is called, the -> runs
+    meterRegistry.gauge("noofloans",loanApplicationRepo,
+        repo->repo.count() // this -> might run every 5 sec
+    );
+  }
+
+  @Timed
   public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId); // 60% ~10ms--20s = REST API call
+    List<CommentDto> comments = meterRegistry.timer("mytimer")
+        .record(()-> commentsApiClient.fetchComments(loanId)); //=> _sum+=t1-t0; _count++
+
+    meterRegistry.counter("tissuesused").increment(100);//echo pregnant🤰
+    meterRegistry.counter("tissuesused").increment(1);//normal eco
+//    meterRegistry.gauge("noofloans",100);// push-based
+
+    //List<CommentDto> comments = getFetchComments(loanId); // 60% ~10ms--20s = REST API call
     LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 16% ~2..6ms = SELECT -> DB
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
 //    log.debug("Loan app: " + loanApplication); // useless toString if level=INFO
@@ -47,6 +62,7 @@ public class LoanService /*extends BaseService*/{
 //    logU.fine(()->"Loan app: " + loanApplication); // same but JCL not Slf4J
     return dto;
   }
+
   Logger logU;
 
   private final AuditRepo auditRepo;

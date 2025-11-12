@@ -14,7 +14,7 @@ import java.util.List;
 @FeignClient("loan-comments")
 public interface CommentsApiClient {
 
-  @Timed
+  @Timed // BEST PRACTICE: @Timed on any api call outside (to know who to blame)
   @Observed
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable("id") Long id);
