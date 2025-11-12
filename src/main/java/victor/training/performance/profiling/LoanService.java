@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
+import static java.util.Collections.synchronizedList;
+
 @Slf4j
-@Service
+@Service // 1 instance
 @RequiredArgsConstructor
 //@Transactional // jr was here / migrated from EJB @Stateless
 @Observed // TODO visualize
@@ -73,23 +75,28 @@ public class LoanService /*extends BaseService*/{
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
+  // last 10
+  // not enough
+//  private final List<Long> recentLoanStatusQueried = synchronizedList(new ArrayList<>());
   private final List<Long> recentLoanStatusQueried = new ArrayList<>();
 
-  //@Transactional(readOnly = true)
-  public synchronized Status getLoanStatus(Long loanId) {
+  public Status getLoanStatus(Long loanId) {
     LoanApplication loanApplication = loanApplicationRepo.findById(loanId).orElseThrow();
-    recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
-    recentLoanStatusQueried.add(loanId);
-    while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.remove(0);
+    synchronized (recentLoanStatusQueried) {
+      recentLoanStatusQueried.remove(loanId); // BUG#7235 - avoid duplicates in list
+      recentLoanStatusQueried.add(loanId);
+      while (recentLoanStatusQueried.size() > 10) recentLoanStatusQueried.removeFirst();
+    }
     return loanApplication.getCurrentStatus();
   }
 
   private final ThreadPoolTaskExecutor executor;
-
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
-    return new ArrayList<>(recentLoanStatusQueried);
+    synchronized (recentLoanStatusQueried) {
+      return new ArrayList<>(recentLoanStatusQueried); // protected read
+    }
   }
 
   public void autoFlushFaraTx() {
