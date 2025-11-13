@@ -26,8 +26,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import static java.util.Collections.synchronizedList;
-
 @Slf4j
 @Service // 1 instance
 @RequiredArgsConstructor
@@ -54,17 +52,22 @@ public class LoanService /*extends BaseService*/{
         ////    meterRegistry.gauge("noofloans",100);// push-based
     );
   }
-
+  private final ThreadPoolTaskExecutor executor;
   @Timed
   public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
-    try (var pool = Executors.newFixedThreadPool(1)) {
-      var futureComments = pool.submit(() ->
-          commentsApiClient.fetchComments(loanId));
+    //try (var pool = Executors.newFixedThreadPool(1)) { // NEVED in Spring/EJB/Quarkus/Micronaut (no BE)
+      log.debug("START");
+      var futureComments = executor.submit(() ->fetch(loanId));
       var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
       LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
       log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
       return dto;
-    }
+    //}
+  }
+
+  private List<CommentDto> fetch(Long loanId) {
+    log.debug("API CALL");
+    return commentsApiClient.fetchComments(loanId);
   }
 
   Logger logU;
@@ -92,7 +95,6 @@ public class LoanService /*extends BaseService*/{
     return loanApplication.getCurrentStatus();
   }
 
-  private final ThreadPoolTaskExecutor executor;
   public List<Long> getRecentLoanStatusQueried() {
     log.info("In parent thread");
     CompletableFuture.runAsync(() -> log.info("In a child thread"), executor).join();
