@@ -2,7 +2,6 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.distribution.HistogramSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +10,7 @@ import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -21,7 +21,7 @@ public class LoanController {
   private final MeterRegistry meterRegistry;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) throws ExecutionException, InterruptedException {
+  public CompletableFuture<LoanApplicationDto> get(@PathVariable Long id) throws ExecutionException, InterruptedException {
     return loanService.getLoanApplication(id);
   }
 

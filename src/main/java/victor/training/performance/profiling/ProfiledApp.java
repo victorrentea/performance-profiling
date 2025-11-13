@@ -49,13 +49,14 @@ public class ProfiledApp implements WebMvcConfigurer {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(5);//always on workers
     executor.setMaxPoolSize(10);
-    executor.setQueueCapacity(5); // rejected tasks => 503 = primitive form of backpressure
-    executor.setRejectedExecutionHandler(new CallerRunsPolicy());
+    executor.setQueueCapacity(500); // rejected tasks => 503 = primitive form of backpressure
+//    executor.setRejectedExecutionHandler(new CallerRunsPolicy());
     // dangerous: can starve the tomcat's thread pool => app freeze
     //  => k8s liveness every 5s -> /health times out 5x => kill pod =DOS
     //  => critical endpoints /place-order might 503/timeout
 
     executor.setThreadNamePrefix("my-");
+    executor.setTaskDecorator(taskDecorator());
     return executor;
   }
 

@@ -8,7 +8,6 @@ import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,27 +23,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 @Slf4j
 @Service // 1 instance
 @RequiredArgsConstructor
 //@Transactional // jr was here / migrated from EJB @Stateless
 @Observed // TODO visualize
-public class LoanService /*extends BaseService*/{
+public class LoanService /*extends BaseService*/ {
   private final LoanApplicationRepo loanApplicationRepo;
   private final CommentsApiClient commentsApiClient;
   private final ObservationRegistry registry;
   private final Tracer tracer;
   private final MeterRegistry meterRegistry; // micrometer
 
-  @PostConstruct // runs once, at spring startup
+  @PostConstruct
+    // runs once, at spring startup
   void onStartup() {
     // pull-based via callback: at any cal of
     // http://localhost:8080/actuator/prometheus is called, the -> runs
-    meterRegistry.gauge("noofloans",loanApplicationRepo,
-        repo->repo.count() // this -> might run every 5 sec
+    meterRegistry.gauge("noofloans", loanApplicationRepo,
+        repo -> repo.count() // this -> might run every 5 sec
         //    List<CommentDto> comments = meterRegistry.timer("mytimer")
         //        .record(()-> commentsApiClient.fetchComments(loanId)); //=> _sum+=t1-t0; _count++
         //
@@ -53,20 +54,28 @@ public class LoanService /*extends BaseService*/{
         ////    meterRegistry.gauge("noofloans",100);// push-based
     );
   }
+
   private final ThreadPoolTaskExecutor executor;
+
   @Timed
-  public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
+  public CompletableFuture<LoanApplicationDto> getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
     log.debug("START");
-//    var futureComments = executor.submit(() ->fetch(loanId)); // pre java8
-//    var futureComments = CompletableFuture.supplyAsync(()->fetch(loanId)); // never in BE
-    var futureComments = CompletableFuture.supplyAsync(
-        ()->fetch(loanId), executor); // ✅YES!
-//    var futureComments = fetch(loanId); // ❌/✅YES!
-    var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
-    LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
-    log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
-    return dto;
+    var futureComments = supplyAsync(() ->
+        fetch(loanId), executor); // ✅YES!
+    var futureLoan = supplyAsync(() ->
+        loanApplicationRepo.findByIdLoadingSteps(loanId), executor);  // 30% ~2..6ms = SELECT -> DB
+    CompletableFuture.runAsync(() -> { // don't do this for fire and forget
+          if (true) throw new RuntimeException("BUG🐞"); //lost, never logged
+          auditRepo.save(new Audit("got loan ".repeat(255) + loanId));
+        }, executor)
+        .exceptionally(error -> {
+          log.error("99% of devs forget to do this" + error);
+          return null; // 🚽
+        });
+
+    return futureLoan.thenCombine(futureComments, LoanApplicationDto::new);//FP kung-fu
   }
+
   //@Async // NEVER USE
   private List<CommentDto> fetch(Long loanId) {
     log.debug("API CALL");
