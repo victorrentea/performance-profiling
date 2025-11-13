@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.dto.GdprDto;
 import victor.training.performance.profiling.entity.Loan;
+import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 
 import java.time.Duration;
 import java.util.List;
@@ -31,7 +32,7 @@ public class LoanController {
   }
 
   @GetMapping("loan/{id}/status")
-  public Loan.Status getStatus(@PathVariable Long id) {
+  public Status getStatus(@PathVariable Long id) {
     Timer timer = Timer.builder("get_loan_status")
         .publishPercentiles(0.5, 0.9, 0.99) // collect percentiles like median, p90, p99
         .publishPercentileHistogram(true)

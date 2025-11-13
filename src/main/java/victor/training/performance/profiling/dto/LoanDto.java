@@ -2,7 +2,7 @@ package victor.training.performance.profiling.dto;
 
 import lombok.Value;
 import victor.training.performance.profiling.entity.Loan;
-import victor.training.performance.profiling.entity.Loan.Status;
+import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 
 import java.util.List;
 

@@ -2,6 +2,7 @@ package victor.training.performance.profiling.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 
 import java.util.ArrayList;
 import java.util.List;

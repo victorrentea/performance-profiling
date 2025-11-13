@@ -7,7 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import victor.training.performance.profiling.entity.Loan;
 import victor.training.performance.profiling.entity.Loan.ApprovalStep;
-import victor.training.performance.profiling.entity.Loan.Status;
+import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 import victor.training.performance.profiling.repo.LoanRepo;
 
 import java.util.List;

@@ -10,7 +10,7 @@ import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.entity.Audit;
 import victor.training.performance.profiling.entity.Loan;
-import victor.training.performance.profiling.entity.Loan.Status;
+import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanRepo;
 
