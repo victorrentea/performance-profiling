@@ -59,7 +59,8 @@ public class LoanService /*extends BaseService*/{
     log.debug("START");
 //    var futureComments = executor.submit(() ->fetch(loanId)); // pre java8
 //    var futureComments = CompletableFuture.supplyAsync(()->fetch(loanId)); // never in BE
-    var futureComments = CompletableFuture.supplyAsync(()->fetch(loanId), executor); // ✅YES!
+    var futureComments = CompletableFuture.supplyAsync(
+        ()->fetch(loanId), executor); // ✅YES!
 //    var futureComments = fetch(loanId); // ❌/✅YES!
     var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
     LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
