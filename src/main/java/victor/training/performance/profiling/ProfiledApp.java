@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.aop.ObservedAspect;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -16,10 +17,12 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -33,7 +36,9 @@ import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 
 import static java.lang.System.currentTimeMillis;
 
+@EnableAspectJAutoProxy(exposeProxy = true)
 @Slf4j
+@EnableAsync
 @SpringBootApplication
 @EnableFeignClients
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
@@ -45,10 +50,10 @@ public class ProfiledApp implements WebMvcConfigurer {
   }
 
   @Bean
-  public ThreadPoolTaskExecutor executor() {
+  public ThreadPoolTaskExecutor executor(@Value("${pool.size:5}") int size) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(5);//always on workers
-    executor.setMaxPoolSize(10);
+    executor.setCorePoolSize(size);//always on workers
+    executor.setMaxPoolSize(size); // keep equal to core to prevent pushing more on a burning downstream resource (eg DB)
     executor.setQueueCapacity(500); // rejected tasks => 503 = primitive form of backpressure
 //    executor.setRejectedExecutionHandler(new CallerRunsPolicy());
     // dangerous: can starve the tomcat's thread pool => app freeze
