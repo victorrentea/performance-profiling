@@ -20,6 +20,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -39,6 +40,16 @@ public class ProfiledApp implements WebMvcConfigurer {
 
   public static void main(String[] args) throws IOException {
     SpringApplication.run(ProfiledApp.class, args);
+  }
+
+  @Bean
+  public ThreadPoolTaskExecutor executor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5);//always on workers
+    executor.setMaxPoolSize(10);
+    executor.setQueueCapacity(5); // rejected tasks => 503 = primitive form of backpressure
+    executor.setThreadNamePrefix("my-");
+    return executor;
   }
 
   @Bean // instrumented by micrometer-tracing
