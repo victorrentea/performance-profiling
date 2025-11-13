@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -21,8 +22,9 @@ public class HotMethodTest {
   void slow() {
     Set<Integer> hashSet = IntStream.range(0, 100_000).boxed()
         .collect(toSet()); // returns a HashSet
-    List<Integer> list = IntStream.range(0, 100_000).boxed().toList();
+    List<Integer> list = IntStream.range(100000, 100000+ 99_999+1).boxed().toList();
 
-    hashSet.removeAll(list);
+    list.forEach(hashSet::remove);
+    // or worse :hashSet.removeAll(new HashSet<>(list));
   }
 }

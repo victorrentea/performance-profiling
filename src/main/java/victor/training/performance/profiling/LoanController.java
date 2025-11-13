@@ -11,6 +11,7 @@ import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -20,7 +21,7 @@ public class LoanController {
   private final MeterRegistry meterRegistry;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) {
+  public LoanApplicationDto get(@PathVariable Long id) throws ExecutionException, InterruptedException {
     return loanService.getLoanApplication(id);
   }
 

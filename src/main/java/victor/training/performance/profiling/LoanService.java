@@ -22,6 +22,8 @@ import victor.training.performance.profiling.repo.LoanApplicationRepo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import static java.util.Collections.synchronizedList;
@@ -44,25 +46,26 @@ public class LoanService /*extends BaseService*/{
     // http://localhost:8080/actuator/prometheus is called, the -> runs
     meterRegistry.gauge("noofloans",loanApplicationRepo,
         repo->repo.count() // this -> might run every 5 sec
+        //    List<CommentDto> comments = meterRegistry.timer("mytimer")
+        //        .record(()-> commentsApiClient.fetchComments(loanId)); //=> _sum+=t1-t0; _count++
+        //
+        //    meterRegistry.counter("tissuesused").increment(100);//echo pregnant🤰
+        //    meterRegistry.counter("tissuesused").increment(1);//normal eco
+        ////    meterRegistry.gauge("noofloans",100);// push-based
     );
   }
 
   @Timed
-  public LoanApplicationDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = meterRegistry.timer("mytimer")
-        .record(()-> commentsApiClient.fetchComments(loanId)); //=> _sum+=t1-t0; _count++
-
-    meterRegistry.counter("tissuesused").increment(100);//echo pregnant🤰
-    meterRegistry.counter("tissuesused").increment(1);//normal eco
-//    meterRegistry.gauge("noofloans",100);// push-based
-
-    //List<CommentDto> comments = getFetchComments(loanId); // 60% ~10ms--20s = REST API call
-    LoanApplication loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId); // 16% ~2..6ms = SELECT -> DB
-    LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
-//    log.debug("Loan app: " + loanApplication); // useless toString if level=INFO
-    log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
-//    logU.fine(()->"Loan app: " + loanApplication); // same but JCL not Slf4J
-    return dto;
+  public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
+    try (var pool = Executors.newFixedThreadPool(2)) {
+      var futureComments = pool.submit(() ->
+          commentsApiClient.fetchComments(loanId));
+      var loanApplication = pool.submit(() ->
+          loanApplicationRepo.findByIdLoadingSteps(loanId));  // 30% ~2..6ms = SELECT -> DB
+      LoanApplicationDto dto = new LoanApplicationDto(loanApplication.get(), futureComments.get());
+      log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
+      return dto;
+    }
   }
 
   Logger logU;
