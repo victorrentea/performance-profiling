@@ -8,6 +8,7 @@ import io.micrometer.tracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,16 +56,17 @@ public class LoanService /*extends BaseService*/{
   private final ThreadPoolTaskExecutor executor;
   @Timed
   public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
-    //try (var pool = Executors.newFixedThreadPool(1)) { // NEVED in Spring/EJB/Quarkus/Micronaut (no BE)
-      log.debug("START");
-      var futureComments = executor.submit(() ->fetch(loanId));
-      var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
-      LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
-      log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
-      return dto;
-    //}
+    log.debug("START");
+//    var futureComments = executor.submit(() ->fetch(loanId)); // pre java8
+//    var futureComments = CompletableFuture.supplyAsync(()->fetch(loanId)); // never in BE
+    var futureComments = CompletableFuture.supplyAsync(()->fetch(loanId), executor); // ✅YES!
+//    var futureComments = fetch(loanId); // ❌/✅YES!
+    var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
+    LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
+    log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
+    return dto;
   }
-
+  //@Async // NEVER USE
   private List<CommentDto> fetch(Long loanId) {
     log.debug("API CALL");
     return commentsApiClient.fetchComments(loanId);

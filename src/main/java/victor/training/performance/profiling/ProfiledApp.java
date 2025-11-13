@@ -61,6 +61,8 @@ public class ProfiledApp implements WebMvcConfigurer {
     return registry -> registry.config().commonTags("application", "APP");
   }
 
+
+
   @Bean // propagate tracing over all Spring-managed thread pools <<< copy this to your app
   public TaskDecorator taskDecorator() {
     return (runnable) -> ContextSnapshot.captureAll().wrap(runnable);
