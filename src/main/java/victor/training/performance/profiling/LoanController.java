@@ -2,13 +2,12 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.distribution.HistogramSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import victor.training.performance.profiling.dto.LoanApplicationDto;
-import victor.training.performance.profiling.dto.SomeOtherDto;
-import victor.training.performance.profiling.entity.LoanApplication;
+import victor.training.performance.profiling.dto.LoanDto;
+import victor.training.performance.profiling.dto.GdprDto;
+import victor.training.performance.profiling.entity.Loan;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,7 +20,7 @@ public class LoanController {
   private final MeterRegistry meterRegistry;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) {
+  public LoanDto get(@PathVariable Long id) {
     return loanService.getLoanApplication(id);
   }
 
@@ -32,7 +31,7 @@ public class LoanController {
   }
 
   @GetMapping("loan/{id}/status")
-  public LoanApplication.Status getStatus(@PathVariable Long id) {
+  public Loan.Status getStatus(@PathVariable Long id) {
     Timer timer = Timer.builder("get_loan_status")
         .publishPercentiles(0.5, 0.9, 0.99) // collect percentiles like median, p90, p99
         .publishPercentileHistogram(true)
@@ -43,15 +42,16 @@ public class LoanController {
 
   @GetMapping("loan/recent")
   public List<Long> getLoanApplicationStatus() {
-    return loanService.getRecentLoanStatusQueried();
+    return loanService.getRecentLoanIds();
   }
 
-  @GetMapping("gdpr")
-  public SomeOtherDto clearFieldsDemo() {
-    return new SomeOtherDto()
-        .setAuthorName("A B")
-        .setAuthorEmail("a@b.com")
-        .setFeedback("feedback");
+  @GetMapping("gdpr") // http://localhost:8080/gdpr
+  public GdprDto clearFieldsDemo() {
+    return new GdprDto()
+        .setAuthorName("A B")// PII
+        .setFeedback("feedback")
+        .setAuthorEmail("a@b.com") // PII
+        ;
   }
 }
 

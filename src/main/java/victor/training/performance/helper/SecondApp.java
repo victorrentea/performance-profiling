@@ -53,7 +53,7 @@ public class SecondApp {
   public String getJurisdiction() throws InterruptedException {
     log.info("/jurisdiction takes 20 millis");
     sleep(20);
-    return "ADMIN";
+    return "USER";
   }
 
   @Slf4j

@@ -4,9 +4,10 @@ import lombok.Data;
 import victor.training.performance.profiling.util.GDPRAspect.VisibleFor;
 
 @Data
-public class SomeOtherDto {
+public class GdprDto {
   String feedback;
-  String authorName;
   @VisibleFor("ADMIN")
-  String authorEmail; // set to null for users not ADMINs
+  String authorName; // = null if user is NOT ADMIN
+  @VisibleFor("ADMIN")
+  String authorEmail;
 }
