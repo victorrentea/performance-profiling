@@ -57,12 +57,11 @@ public class LoanService /*extends BaseService*/{
 
   @Timed
   public LoanApplicationDto getLoanApplication(Long loanId) throws ExecutionException, InterruptedException {
-    try (var pool = Executors.newFixedThreadPool(2)) {
+    try (var pool = Executors.newFixedThreadPool(1)) {
       var futureComments = pool.submit(() ->
           commentsApiClient.fetchComments(loanId));
-      var loanApplication = pool.submit(() ->
-          loanApplicationRepo.findByIdLoadingSteps(loanId));  // 30% ~2..6ms = SELECT -> DB
-      LoanApplicationDto dto = new LoanApplicationDto(loanApplication.get(), futureComments.get());
+      var loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);  // 30% ~2..6ms = SELECT -> DB
+      LoanApplicationDto dto = new LoanApplicationDto(loanApplication, futureComments.get());
       log.debug("Loan app: {}", loanApplication); // calls toString on params <=>level<=DEBUG
       return dto;
     }
