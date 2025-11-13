@@ -83,7 +83,11 @@ public class LoanService /*extends BaseService*/ {
 //        });
     ((LoanService)AopContext.currentProxy()).fireAndForget(loanId);
 
-    return futureLoan.thenCombine(futureComments, LoanApplicationDto::new);//FP kung-fu
+    return futureLoan.thenCombine(futureComments, LoanApplicationDto::new)
+        .thenApply(dto -> {
+          log.trace("Loan: {}", dto);
+          return dto;
+        });//FP kung-fu
   }
 
   @Async // the best wat for fire-and-forget!
