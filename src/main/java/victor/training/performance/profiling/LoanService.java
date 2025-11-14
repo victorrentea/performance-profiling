@@ -82,7 +82,6 @@ public class LoanService /*extends BaseService*/ {
 //          return null; // 🚽
 //        });
     ((LoanService)AopContext.currentProxy()).fireAndForget(loanId);
-
     return futureLoan.thenCombine(futureComments, LoanApplicationDto::new)
         .thenApply(dto -> {
           log.trace("Loan: {}", dto);
