@@ -2,13 +2,12 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.HistogramSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import victor.training.performance.profiling.dto.LoanDto;
-import victor.training.performance.profiling.dto.GdprDto;
-import victor.training.performance.profiling.entity.Loan;
-import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
+import victor.training.performance.profiling.dto.LoanApplicationDto;
+import victor.training.performance.profiling.entity.LoanApplication;
 
 import java.time.Duration;
 import java.util.List;
@@ -19,10 +18,17 @@ import java.util.List;
 public class LoanController {
   private final LoanService loanService;
   private final MeterRegistry meterRegistry;
+  private final TracingDemo tracingDemo;
 
   @GetMapping("loan/{id}")
-  public LoanDto get(@PathVariable Long id) {
+  public LoanApplicationDto get(@PathVariable Long id) {
+    log.info("Controller");
     return loanService.getLoanApplication(id);
+  }
+
+  @GetMapping("loan/{id}/traced")
+  public LoanApplicationDto getWithTracing(@PathVariable Long id) {
+    return tracingDemo.getLoanApplication(id);
   }
 
   @PostMapping("loan/{title}")
@@ -32,7 +38,7 @@ public class LoanController {
   }
 
   @GetMapping("loan/{id}/status")
-  public Status getStatus(@PathVariable Long id) {
+  public LoanApplication.Status getStatus(@PathVariable Long id) {
     Timer timer = Timer.builder("get_loan_status")
         .publishPercentiles(0.5, 0.9, 0.99) // collect percentiles like median, p90, p99
         .publishPercentileHistogram(true)
@@ -43,16 +49,8 @@ public class LoanController {
 
   @GetMapping("loan/recent")
   public List<Long> getLoanApplicationStatus() {
-    return loanService.getRecentLoanIds();
+    return loanService.getRecentLoanStatusQueried();
   }
 
-  @GetMapping("gdpr") // http://localhost:8080/gdpr
-  public GdprDto clearFieldsDemo() {
-    return new GdprDto()
-        .setAuthorName("A B")// PII
-        .setFeedback("feedback")
-        .setAuthorEmail("a@b.com") // PII
-        ;
-  }
 }
 
