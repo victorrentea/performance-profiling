@@ -43,3 +43,4 @@ data-output*.txt
 glowroot.jar
 opentelemetry-javaagent.jar
 capture/
+/flamegraph.html

@@ -6,8 +6,8 @@ import io.micrometer.core.instrument.distribution.HistogramSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import victor.training.performance.profiling.dto.LoanApplicationDto;
-import victor.training.performance.profiling.entity.LoanApplication;
+import victor.training.performance.profiling.dto.LoanDto;
+import victor.training.performance.profiling.entity.Loan;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,13 +21,13 @@ public class LoanController {
   private final TracingDemo tracingDemo;
 
   @GetMapping("loan/{id}")
-  public LoanApplicationDto get(@PathVariable Long id) {
+  public LoanDto get(@PathVariable Long id) {
     log.info("Controller");
     return loanService.getLoanApplication(id);
   }
 
   @GetMapping("loan/{id}/traced")
-  public LoanApplicationDto getWithTracing(@PathVariable Long id) {
+  public LoanDto getWithTracing(@PathVariable Long id) {
     return tracingDemo.getLoanApplication(id);
   }
 
@@ -38,7 +38,7 @@ public class LoanController {
   }
 
   @GetMapping("loan/{id}/status")
-  public LoanApplication.Status getStatus(@PathVariable Long id) {
+  public Loan.ApprovalStep.Status getStatus(@PathVariable Long id) {
     Timer timer = Timer.builder("get_loan_status")
         .publishPercentiles(0.5, 0.9, 0.99) // collect percentiles like median, p90, p99
         .publishPercentileHistogram(true)
@@ -49,7 +49,7 @@ public class LoanController {
 
   @GetMapping("loan/recent")
   public List<Long> getLoanApplicationStatus() {
-    return loanService.getRecentLoanStatusQueried();
+    return loanService.getRecentLoanIds();
   }
 
 }

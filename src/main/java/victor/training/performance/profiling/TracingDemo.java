@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import victor.training.performance.profiling.dto.CommentDto;
-import victor.training.performance.profiling.dto.LoanApplicationDto;
-import victor.training.performance.profiling.entity.LoanApplication;
-import victor.training.performance.profiling.repo.LoanApplicationRepo;
+import victor.training.performance.profiling.dto.LoanDto;
+import victor.training.performance.profiling.entity.Loan;
+import victor.training.performance.profiling.repo.LoanRepo;
 import victor.training.performance.profiling.util.PerformanceUtil;
 
 import java.util.List;
@@ -22,10 +22,10 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class TracingDemo {
   private final CommentsApiClient commentsApiClient;
-  private final LoanApplicationRepo loanApplicationRepo;
+  private final LoanRepo loanApplicationRepo;
   private final ThreadPoolTaskExecutor executor;
 
-  public LoanApplicationDto getLoanApplication(Long loanId) {
+  public LoanDto getLoanApplication(Long loanId) {
     log.trace("Start");
     Span.current().setAttribute("loan.id", loanId);
 
@@ -45,7 +45,7 @@ public class TracingDemo {
     var spanFind = GlobalOpenTelemetry.getTracer("profiling.app")
         .spanBuilder("fetch.loanApplication")
         .startSpan();
-    LoanApplication loanApplication;
+    Loan loanApplication;
     try (Scope ignored = spanFind.makeCurrent()) {
       log.info("Before loan fetch");
       loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
@@ -54,22 +54,22 @@ public class TracingDemo {
     }
 
     // fire-and-forget
-    var span3 = GlobalOpenTelemetry.getTracer("profiling.app")
+    var backgroundSpan = GlobalOpenTelemetry.getTracer("profiling.app")
         .spanBuilder("background.work")
         .startSpan();
 
     CompletableFuture.runAsync(() -> {
-      try (Scope ignored = span3.makeCurrent()) {
+      try (Scope ignored = backgroundSpan.makeCurrent()) {
         log.info("Start background work");
         PerformanceUtil.sleepMillis(100);
         log.info("After background work");
       } finally {
-        span3.end();
+        backgroundSpan.end();
       }
     });
 
     List<CommentDto> comments = commentsFuture.join();
-    LoanApplicationDto dto = new LoanApplicationDto(loanApplication, comments);
+    var dto = new LoanDto(loanApplication, comments);
     log.trace("End");
     return dto;
   }
