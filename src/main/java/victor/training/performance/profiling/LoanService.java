@@ -1,6 +1,6 @@
 package victor.training.performance.profiling;
 
-import io.micrometer.observation.annotation.Observed;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanRepo;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Slf4j
@@ -24,6 +25,7 @@ import java.util.List;
 public class LoanService {
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
+  private final MeterRegistry meterRegistry;
 
   public LoanDto getLoanApplication(Long loanId) {
     List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
@@ -40,23 +42,27 @@ public class LoanService {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
-  private final List<Long> recentLoanIds = new ArrayList<>();
+  private final LinkedHashSet<Long> recentLoanIds = new LinkedHashSet<>();
 
   @PostConstruct
   public void atStartup() {
-    // TODO gauge on list above
+    // TODO register a gauge metric that tracks the size of the recentLoanIds list in real-time
   }
 
   public synchronized Status getLoanStatus(Long loanId) {
-    // TODO counter ++
+    // TODO register a counter metric that counts how many times the status of a loan is requested, with a tag for the loanId
+
     Loan loan = loanRepo.findById(loanId).orElseThrow();
-    recentLoanIds.remove(loanId); // BUG#7235 - avoid duplicates in list
+
+    recentLoanIds.remove(loanId);
     recentLoanIds.add(loanId);
-    while (recentLoanIds.size() > 10) recentLoanIds.remove(0);
+    if (recentLoanIds.size() > 10) {
+      recentLoanIds.removeFirst();
+    }
     return loan.getCurrentStatus();
   }
 
-  public List<Long> getRecentLoanIds() {
+  public synchronized List<Long> getRecentLoanIds() {
     return new ArrayList<>(recentLoanIds);
   }
 }

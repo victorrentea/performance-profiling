@@ -46,12 +46,12 @@ public class ProfiledApp implements WebMvcConfigurer {
     return builder.build();
   }
 
-  @Bean // enables the use of @Timed
+  @Bean // @Timed
   public TimedAspect timedAspect(MeterRegistry registry) {
     return new TimedAspect(registry);
   }
 
-  @Bean // enables the use of @Observed
+  @Bean // @Observed
   public ObservedAspect observedAspect(ObservationRegistry registry) {
     return new ObservedAspect(registry);
   }
@@ -61,7 +61,7 @@ public class ProfiledApp implements WebMvcConfigurer {
     return registry -> registry.config().commonTags("application", "APP");
   }
 
-  @Bean // propagate tracing over all Spring-managed thread pools
+  @Bean // propagate tracing over Spring-managed thread pools
   public TaskDecorator taskDecorator() {
     return (runnable) -> ContextSnapshot.captureAll().wrap(runnable);
   }
