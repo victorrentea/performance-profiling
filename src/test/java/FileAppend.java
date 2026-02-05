@@ -1,8 +1,10 @@
 import lombok.extern.slf4j.Slf4j;
+import victor.training.performance.helper.FileHashUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -18,7 +20,7 @@ public class FileAppend {
   static int N_WORK_ITEMS = 200_000;
   static int N_THREADS = 4;
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
     System.out.println("Starting async-profiler on this process...");
     long pid = ProcessHandle.current().pid();
     String asprofCmd = System.getProperty("user.home") + "/workspace/async-profiler/bin/asprof -d 30 -f flamegraph.html " + pid;
@@ -38,19 +40,21 @@ public class FileAppend {
       executor.invokeAll(tasks);
     }
     long t1 = currentTimeMillis();
-    System.out.println("Took " + (t1 - t0) / 1000f + " s to write a file of size " + Files.size(p) / 1024 + " KB");
+
+    System.out.println("Took " + (t1 - t0) / 1000f + " s to write a file of size " +
+        Files.size(p) / 1024 + " KB, of hash: " + FileHashUtil.computeShortHash(p));
 
     System.out.println("Flamegraph: file://" + Path.of("flamegraph.html").toAbsolutePath());
   }
 
   static int c = 0;
+
   static Callable<String> work(int workNo) {
     return () -> {
       int nItems = N_WORK_ITEMS / N_THREADS;
       for (int i = 0; i < nItems; i++) {
         synchronized (FileAppend.class) {
-          String s = "ab" + (c++) % 10;
-          Files.writeString(p, s, CREATE, APPEND);
+          Files.writeString(p, "ab" + (c++) % 10, CREATE, APPEND);
         }
       }
       System.out.println("Work #" + workNo + " done");
