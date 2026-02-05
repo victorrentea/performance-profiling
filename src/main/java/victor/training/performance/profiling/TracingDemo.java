@@ -1,8 +1,10 @@
 package victor.training.performance.profiling;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +31,20 @@ public class TracingDemo {
     log.trace("Start");
     Span.current().setAttribute("loan.id", loanId);
 
+    Baggage baggage = Baggage.current() // sent as 'baggage' request header to other services
+        .toBuilder()
+        .put("loan.id", String.valueOf(loanId))
+        .put("user.id", "jdoe")
+        .build();
+
     var commentsFuture = CompletableFuture.supplyAsync(() -> {
       var spanComments = GlobalOpenTelemetry.getTracer("profiling.app")
           .spanBuilder("fetch.comments")
           .setAttribute("loan.id", loanId)
           .startSpan();
-      try (Scope ignored = spanComments.makeCurrent()) {
+      // Propagate baggage in the async call
+      try (Scope ignored = baggage.makeCurrent();
+           Scope ignored2 = spanComments.makeCurrent()) {
         log.info("Before fetch");
         return commentsApiClient.fetchComments(loanId);
       } finally {
