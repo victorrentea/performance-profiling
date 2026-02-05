@@ -19,8 +19,14 @@ public class FileAppend {
   static int N_THREADS = 4;
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    System.out.println("Press Enter to start writing a file. PID: " + ProcessHandle.current().pid());
-    System.in.read();
+    System.out.println("Starting async-profiler on this process...");
+    long pid = ProcessHandle.current().pid();
+    String asprofCmd = System.getProperty("user.home") + "/workspace/async-profiler/bin/asprof -d 30 -f flamegraph.html " + pid;
+    new ProcessBuilder("sh", "-c", asprofCmd)
+        .inheritIO()
+        .start();
+    Thread.sleep(200);
+
     System.out.println("Start writing file...");
     p.toFile().delete();
 
@@ -33,6 +39,8 @@ public class FileAppend {
     }
     long t1 = currentTimeMillis();
     System.out.println("Took " + (t1 - t0) / 1000f + " s to write a file of size " + Files.size(p) / 1024 + " KB");
+
+    System.out.println("Flamegraph: file://" + Path.of("flamegraph.html").toAbsolutePath());
   }
 
   static int c = 0;
