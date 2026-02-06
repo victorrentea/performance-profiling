@@ -13,7 +13,6 @@ import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.entity.Loan;
 import victor.training.performance.profiling.repo.LoanRepo;
-import victor.training.performance.profiling.util.PerformanceUtil;
 import victor.training.performance.profiling.util.Sleep;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class TracingDemo {
+public class OtelDemo {
   private final CommentsApiClient commentsApiClient;
   private final LoanRepo loanApplicationRepo;
   private final ThreadPoolTaskExecutor executor;

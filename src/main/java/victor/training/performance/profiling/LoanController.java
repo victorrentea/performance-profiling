@@ -2,7 +2,6 @@ package victor.training.performance.profiling;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.distribution.HistogramSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,7 @@ import java.util.List;
 public class LoanController {
   private final LoanService loanService;
   private final MeterRegistry meterRegistry;
-  private final TracingDemo tracingDemo;
+  private final OtelDemo otelDemo;
 
   @GetMapping("loan/{id}")
   public LoanDto get(@PathVariable Long id) {
@@ -28,7 +27,7 @@ public class LoanController {
 
   @GetMapping("loan/{id}/traced")
   public LoanDto getWithTracing(@PathVariable Long id) {
-    return tracingDemo.getLoanApplication(id);
+    return otelDemo.getLoanApplication(id);
   }
 
   @PostMapping("loan/{title}")
