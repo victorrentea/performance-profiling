@@ -15,7 +15,6 @@ import java.util.List;
 public interface CommentsApiClient {
 
   @Timed
-  @Observed
   @GetMapping("loan-comments/{id}")
   List<CommentDto> fetchComments(@PathVariable("id") Long id);
 }
