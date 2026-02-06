@@ -30,7 +30,7 @@ public class LoanService {
     var comments = commentsApiClient.fetchComments(loanId);
     Loan loan = loanRepo.findByIdLoadingSteps(loanId);
     LoanDto dto = new LoanDto(loan, comments);
-    log.trace("Return loan: {}", loan);
+    log.trace("Return loan: " + loan);
     return dto;
   }
 
