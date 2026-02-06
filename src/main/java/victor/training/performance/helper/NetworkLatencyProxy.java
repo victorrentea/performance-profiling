@@ -14,15 +14,17 @@ public class NetworkLatencyProxy {
   private String remoteHost = "localhost";
   private int remotePort = 9092;
   private int port = 19092;
-  private int delayMillis = 3;
+  private int delayMillis;
 
-  public NetworkLatencyProxy() {
+  public NetworkLatencyProxy(int delayMillis) {
+    this.delayMillis = delayMillis;
   }
 
   public NetworkLatencyProxy(String remoteHost, Integer remotePort, Integer port, Integer delayMillis) {
     if (remoteHost != null) this.remoteHost = remoteHost;
     if (remotePort != null) this.remotePort = remotePort;
     if (port != null) this.port = port;
+    this.delayMillis = 3;
     if (delayMillis != null) this.delayMillis = delayMillis;
   }
 

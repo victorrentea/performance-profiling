@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.entity.Audit;
 import victor.training.performance.profiling.entity.Loan;
@@ -20,18 +19,18 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class LoanService {
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
   private final MeterRegistry meterRegistry;
 
   public LoanDto getLoanApplication(Long loanId) {
-    List<CommentDto> comments = commentsApiClient.fetchComments(loanId);
+    var comments = commentsApiClient.fetchComments(loanId);
     Loan loan = loanRepo.findByIdLoadingSteps(loanId);
     LoanDto dto = new LoanDto(loan, comments);
-    log.trace("Return loan: " + loan);
+    log.trace("Return loan: {}", loan);
     return dto;
   }
 
@@ -66,3 +65,6 @@ public class LoanService {
     return new ArrayList<>(recentLoanIds);
   }
 }
+
+// Tip:  to see the average value of a timer in ms, use the following promQL:
+// (rate(comments_queue_waiting_time_seconds_sum[1m])/rate(comments_queue_waiting_time_seconds_count[1m]))*1000

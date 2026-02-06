@@ -3,7 +3,6 @@ package victor.training.performance.profiling;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import lombok.RequiredArgsConstructor;
@@ -31,20 +30,22 @@ public class TracingDemo {
     log.trace("Start");
     Span.current().setAttribute("loan.id", loanId);
 
-    Baggage baggage = Baggage.current() // sent as 'baggage' request header to other services
+    Baggage baggage = Baggage.current()
         .toBuilder()
         .put("loan.id", String.valueOf(loanId))
         .put("user.id", "jdoe")
         .build();
 
+    // Capture parent context for async propagation
+    Context parentContext = Context.current().with(baggage);
+
     var commentsFuture = CompletableFuture.supplyAsync(() -> {
       var spanComments = GlobalOpenTelemetry.getTracer("profiling.app")
           .spanBuilder("fetch.comments")
+          .setParent(parentContext) // Set parent context explicitly
           .setAttribute("loan.id", loanId)
           .startSpan();
-      // Propagate baggage in the async call
-      try (Scope ignored = baggage.makeCurrent();
-           Scope ignored2 = spanComments.makeCurrent()) {
+      try (Scope ignored = spanComments.makeCurrent()) {
         log.info("Before fetch");
         return commentsApiClient.fetchComments(loanId);
       } finally {
@@ -54,6 +55,7 @@ public class TracingDemo {
 
     var spanFind = GlobalOpenTelemetry.getTracer("profiling.app")
         .spanBuilder("fetch.loanApplication")
+        .setParent(Context.current()) // Set parent context explicitly
         .startSpan();
     Loan loanApplication;
     try (Scope ignored = spanFind.makeCurrent()) {
@@ -63,12 +65,11 @@ public class TracingDemo {
       spanFind.end();
     }
 
-    // fire-and-forget
-    var backgroundSpan = GlobalOpenTelemetry.getTracer("profiling.app")
-        .spanBuilder("background.work")
-        .startSpan();
-
     CompletableFuture.runAsync(() -> {
+      var backgroundSpan = GlobalOpenTelemetry.getTracer("profiling.app")
+          .spanBuilder("background.work")
+          .setParent(parentContext)
+          .startSpan();
       try (Scope ignored = backgroundSpan.makeCurrent()) {
         log.info("Start background work");
         PerformanceUtil.sleepMillis(100);
@@ -76,7 +77,7 @@ public class TracingDemo {
       } finally {
         backgroundSpan.end();
       }
-    });
+    }, executor);
 
     List<CommentDto> comments = commentsFuture.join();
     var dto = new LoanDto(loanApplication, comments);

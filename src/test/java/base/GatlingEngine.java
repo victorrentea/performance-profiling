@@ -50,8 +50,11 @@ public class GatlingEngine {
       System.err.println("❌❌❌ Some Requests were in ERROR (exit code=" + code + ") ❌❌❌");
     }
 
-    System.out.println("You can access Glowroot at http://localhost:4000");
-    System.out.println("Flamegraph🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
+    // TODO can I get mean programatically printed here?
+    System.out.println("Glowroot  : http://localhost:4000");
+    System.out.println("Flamegraph: http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
+    // print finish time as hour:minute
+    System.out.println("Finished at " + java.time.LocalTime.now().withSecond(0).withNano(0));
   }
 
   private static int runGatlingInFork(String[] gatlingArgs) {
@@ -77,7 +80,7 @@ public class GatlingEngine {
   }
 
   private static void waitForApp() {
-    System.out.print("Wait for app to become available ");
+    System.out.print("Wait for app to start ");
     Awaitility.await()
         .pollDelay(ofSeconds(1))
         .timeout(ofSeconds(10))
@@ -104,9 +107,9 @@ public class GatlingEngine {
       URI uri = URI.create("http://localhost:4000/backend/admin/delete-all-stored-data");
       HttpRequest postRequest = HttpRequest.newBuilder().POST(BodyPublishers.ofString("{}")).uri(uri).build();
       HttpClient.newHttpClient().send(postRequest, BodyHandlers.discarding());
-      System.out.println("✅Glowroot found at localhost:4000 -> cleared old profile recording");
+      System.out.println("✅Cleared Glowroot data at localhost:4000");
     } catch (IOException | InterruptedException e) {
-      System.out.println("⚠️WARN: Could not clear Glowroot data. not started on :4000?");
+      System.out.println("⚠️WARN: Could not clear Glowroot data. Not started on :4000?");
       // -javaagent:/Users/victorrentea/workspace/glowroot/glowroot.jar
     }
   }
