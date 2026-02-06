@@ -1,5 +1,5 @@
 import lombok.extern.slf4j.Slf4j;
-import victor.training.performance.helper.FileHashUtil;
+import victor.training.performance.profiling.util.FileHashUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;

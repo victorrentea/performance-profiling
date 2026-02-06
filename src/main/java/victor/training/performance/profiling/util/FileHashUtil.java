@@ -1,4 +1,4 @@
-package victor.training.performance.helper;
+package victor.training.performance.profiling.util;
 
 import java.io.IOException;
 import java.nio.file.Files;
