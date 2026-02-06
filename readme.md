@@ -1,50 +1,65 @@
 # Java Performance Profiling Workshop
 
-### Start the Database
-- [▶️ Run StartDatabase](src/main/java/victor/training/performance/helper/StartDatabase.java) to start a standalone in-memory H2 database running at `jdbc:h2:tcp://localhost:9092/~/test` (user=`sa`, password=`sa`).
-- Traffic to database will be delayed by a [network proxy](src/main/java/victor/training/performance/helper/NetworkLatencyProxy.java) started on port `19092`. 
-- (Optional) Connect to the database from IntelliJ (or your tool of coice) through the proxy via URL: `jdbc:h2:tcp://localhost:19092/~/test`.
+## Setup
 
-### Start the Second App
-- [▶️ Run SecondApp](src/main/java/victor/training/performance/helper/SecondApp.java) to start a second application called by the first one.
+### 1. Start the Database
+- [▶️ Run StartDatabase](src/main/java/victor/training/performance/helper/StartDatabase.java) to start a standalone in-memory H2 database at `jdbc:h2:tcp://localhost:9092/~/test` (user=`sa`, password=`sa`)
+- Traffic is delayed by a [network proxy](src/main/java/victor/training/performance/helper/NetworkLatencyProxy.java) on port `19092`
+- (Optional) Connect from IntelliJ through the proxy: `jdbc:h2:tcp://localhost:19092/~/test`
 
-### Start the Profiled App
-- [▶️ Run ProfiledApp](src/main/java/victor/training/performance/profiling/ProfiledApp.java) to start the application we will study.
+### 2. Start the Second App
+- [▶️ Run SecondApp](src/main/java/victor/training/performance/helper/SecondApp.java) to start the downstream service
 
-### Instrument the Profiled App with Glowroot
-Glowroot is a lightweight Java Agent that collects performance metrics and profiler results.
-- Download the dist zip from [glowroot.org](https://glowroot.org/).
-- Unzip it and copy the path to the `glowroot.jar`.
-- Add `-javaagent:/path/to/glowroot.jar` to the 'VM options' of your run configuration of ProfiledApp to instrument it.
-- Open http://localhost:4000 to see the Glowroot UI:
-![img.png](art/glowroot.png)
+### 3. Start the Profiled App
+- [▶️ Run ProfiledApp](src/main/java/victor/training/performance/profiling/ProfiledApp.java) to start the main application
 
-### Run the Load Tests
-- [▶️ Run LoadTest](src/test/java/LoadTest.java), and click the links printed at the end  
-- Inspect the generated Gatling report, looking like this:
-![img.png](art/gatling.png)
-- Study the flamegraph by opening this link: http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
+### 4. Instrument with Glowroot
+Glowroot is a lightweight Java Agent for performance metrics and profiling.
+- Download from [glowroot.org](https://glowroot.org/)
+- Add to VM options: `-javaagent:/path/to/glowroot.jar`
+- Open UI: http://localhost:4000
 
-### Optimization steps
-1. Avoid useless network call from @Aspect
-   - restTemplate.getForObject sometimes does not have to run: reorder lines
-   - Observe: the time spent in the aspect is gone
-2. Fix JDBC Connection Starvation issue:
-   - Observe the Hikari getConnection time in the flamegraph
-   - [Optional] increase Hikari connection pool size -> starvation fixed; UNDO
-   - Make getLoanApplication not @Transactional -> no change :( 
-   - Release the JDBC Connection earlier by `spring.jpa.open-in-view=false`
-3. Lazy loading in toString
-   - Observe: LoanApplication.toString performs a lazy load
-   1) Use log.trace("... {}", loanApplication) instead of log.trace("..." + loanApplication)
-   2) Fix the lazy load by manually creating a toString that does not include the collection fields/@ToString.Exclude
-4. Fix the Apache HTTP Client connection pool
-   - Observe: time is spent to acquire a connection from the Apache Http connection pool
-   - Remove `feign.httpclient.max-connections-per-route` from application.properties
+![Glowroot UI](art/glowroot.png)
 
-### Add the open-telemetry agent (optional: requires local Docker)
-- Start the monitoring-otel docker compose
-- Download the OTEL agent from [https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases](here)
-- Add to your VM options: `-javaagent:/path/to/opentelemetry-javaagent.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500`
+### 5. Run Load Tests
+- [▶️ Run LoadTest](src/test/java/LoadTest.java) and click the generated report link
+- Study the flamegraph: http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web
 
-Import https://grafana.com/grafana/dashboards/19004-spring-boot-statistics/
+![Gatling Report](art/gatling.png)
+
+## Optimization Steps
+
+### 1. Avoid Useless Network Call from @Aspect
+- `restTemplate.getForObject` sometimes runs unnecessarily: reorder guard clauses
+- Observe: aspect execution time eliminated
+
+### 2. Fix JDBC Connection Starvation
+- Observe: Hikari `getConnection` time in flamegraph
+- (Optional) Increase Hikari pool size → starvation fixed; UNDO
+- Remove `@Transactional` from `getLoanApplication` → no change
+- Release connections earlier: `spring.jpa.open-in-view=false`
+
+### 3. Fix Lazy Loading in toString
+- Observe: `LoanApplication.toString` triggers lazy load
+- Solutions:
+  1. Use `log.trace("... {}", loanApplication)` instead of string concatenation
+  2. Add `@ToString.Exclude` on collection fields or create manual `toString`
+
+### 4. Fix Apache HTTP Client Connection Pool
+- Observe: time spent acquiring connection from pool
+- Remove `feign.httpclient.max-connections-per-route` from `application.properties`
+
+## Optional: OpenTelemetry Instrumentation
+
+Requires local Docker.
+
+1. Start monitoring: `docker-compose -f grafana-otel-lgtm.yml up`
+2. Download OTEL agent: [opentelemetry-java-instrumentation releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
+3. Add to VM options:
+   ```
+   -javaagent:/path/to/opentelemetry-javaagent.jar
+   -Dotel.instrumentation.micrometer.enabled=true
+   -Dotel.metric.export.interval=500
+   -Dotel.bsp.schedule.delay=500
+   ```
+4. Import Grafana dashboard: https://grafana.com/grafana/dashboards/19004-spring-boot-statistics/
