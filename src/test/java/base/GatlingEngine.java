@@ -1,6 +1,5 @@
 package base;
 
-import io.gatling.app.Gatling;
 import org.awaitility.Awaitility;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -12,14 +11,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
@@ -50,10 +51,9 @@ public class GatlingEngine {
       System.err.println("❌❌❌ Some Requests were in ERROR (exit code=" + code + ") ❌❌❌");
     }
 
-    // TODO can I get mean programatically printed here?
+    printGatlingStats();
     System.out.println("Glowroot  : http://localhost:4000");
     System.out.println("Flamegraph: http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
-    // print finish time as hour:minute
     System.out.println("Finished at " + java.time.LocalTime.now().withSecond(0).withNano(0));
   }
 
@@ -111,6 +111,36 @@ public class GatlingEngine {
     } catch (IOException | InterruptedException e) {
       System.out.println("⚠️WARN: Could not clear Glowroot data. Not started on :4000?");
       // -javaagent:/Users/victorrentea/workspace/glowroot/glowroot.jar
+    }
+  }
+
+  private static void printGatlingStats() {
+    try {
+      Path latestResultsDir = Files.list(resultsDirectory())
+          .filter(Files::isDirectory)
+          .max(Comparator.comparing(path -> path.getFileName().toString()))
+          .orElseThrow(() -> new RuntimeException("No Gatling results directory found"));
+
+      Path statsFile = latestResultsDir.resolve("js").resolve("stats.js");
+      if (!Files.exists(statsFile)) {
+        System.out.println("⚠️WARN: stats.js not found in " + latestResultsDir);
+        return;
+      }
+
+      String content = Files.readString(statsFile);
+
+      // regex: "meanResponseTime":\s*\{\s*"total":\s*"(\d+)"
+      Pattern pattern = Pattern.compile("\"meanResponseTime\":\\s*\\{[^}]*\"total\":\\s*\"(\\d+)\"");
+      Matcher matcher = pattern.matcher(content);
+
+      if (matcher.find()) {
+        String meanTime = matcher.group(1);
+        System.out.println("Mean Latency: " + meanTime + " ms (details and full report above)");
+      } else {
+        System.out.println("⚠️WARN: Could not parse mean response time from stats.js");
+      }
+    } catch (IOException e) {
+      System.out.println("⚠️WARN: Failed to read Gatling stats: " + e.getMessage());
     }
   }
 
