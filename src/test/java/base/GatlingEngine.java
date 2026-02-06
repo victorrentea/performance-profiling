@@ -51,7 +51,7 @@ public class GatlingEngine {
     }
 
     System.out.println("You can access Glowroot at http://localhost:4000");
-    System.out.println("Flamegraph🔥🔥🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
+    System.out.println("Flamegraph🔥 at http://localhost:4000/transaction/thread-flame-graph?transaction-type=Web 🔥🔥🔥");
   }
 
   private static int runGatlingInFork(String[] gatlingArgs) {
@@ -104,9 +104,10 @@ public class GatlingEngine {
       URI uri = URI.create("http://localhost:4000/backend/admin/delete-all-stored-data");
       HttpRequest postRequest = HttpRequest.newBuilder().POST(BodyPublishers.ofString("{}")).uri(uri).build();
       HttpClient.newHttpClient().send(postRequest, BodyHandlers.discarding());
-      System.out.println("Glowroot found at localhost:4000 -> cleared old profile recording");
+      System.out.println("✅Glowroot found at localhost:4000 -> cleared old profile recording");
     } catch (IOException | InterruptedException e) {
-      System.out.println("WARN: Could not clear Glowroot data. not started on :4000?");
+      System.out.println("⚠️WARN: Could not clear Glowroot data. not started on :4000?");
+      // -javaagent:/Users/victorrentea/workspace/glowroot/glowroot.jar
     }
   }
 
