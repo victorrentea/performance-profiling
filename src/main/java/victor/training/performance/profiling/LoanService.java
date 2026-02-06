@@ -24,7 +24,6 @@ import java.util.List;
 public class LoanService {
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
-  private final MeterRegistry meterRegistry;
 
   public LoanDto getLoanApplication(Long loanId) {
     var comments = commentsApiClient.fetchComments(loanId);
@@ -42,6 +41,7 @@ public class LoanService {
   }
 
   private final LinkedHashSet<Long> recentLoanIds = new LinkedHashSet<>();
+  private final MeterRegistry meterRegistry;
 
   @PostConstruct
   public void atStartup() {
@@ -68,3 +68,5 @@ public class LoanService {
 
 // Tip:  to see the average value of a timer in ms, use the following promQL:
 // (rate(comments_queue_waiting_time_seconds_sum[1m])/rate(comments_queue_waiting_time_seconds_count[1m]))*1000
+// Hikari connection acquisition time in ms:
+// (rate(hikaricp_connections_acquire_seconds_sum{pool="HikariPool-1"}[1m])/rate(hikaricp_connections_acquire_seconds_count{pool="HikariPool-1"}[1m]))*1000
