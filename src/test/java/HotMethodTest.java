@@ -6,7 +6,7 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toSet;
 
-// in real life, microbenchmark using  Java Measuring Harness (JMH)
+// microbenchmark sub-ms code using Java Measuring Harness (JMH)
 public class HotMethodTest {
   @Test
   void fast() {

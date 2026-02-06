@@ -14,6 +14,7 @@ import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.entity.Loan;
 import victor.training.performance.profiling.repo.LoanRepo;
 import victor.training.performance.profiling.util.PerformanceUtil;
+import victor.training.performance.profiling.util.Sleep;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -72,7 +73,7 @@ public class TracingDemo {
           .startSpan();
       try (Scope ignored = backgroundSpan.makeCurrent()) {
         log.info("Start background work");
-        PerformanceUtil.sleepMillis(100);
+        Sleep.millis(100);
         log.info("After background work");
       } finally {
         backgroundSpan.end();

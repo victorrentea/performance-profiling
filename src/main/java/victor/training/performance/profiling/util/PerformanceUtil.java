@@ -37,16 +37,4 @@ public class PerformanceUtil {
         System.out.println("<JFR not started>");
     }
 
-    /**
-     * Sleeps quietly (without throwing a checked exception)
-     */
-    public static void sleepMillis(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
-    }
-
 }
