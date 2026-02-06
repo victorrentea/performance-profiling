@@ -25,5 +25,5 @@ public class LoadTest extends Simulation {
         // ⚠️ Check all requests were successful! TRAP: Error requests tend to be very fast.
         .assertions(global().successfulRequests().percent().gt(99.0));
   }
-  // ⚠️ Before you begin tuning, prove that rerunning the load test produces similar results!
+  // ⚠️ Before you begin tuning, prove that rerunning the load test produc§es similar results!
 }

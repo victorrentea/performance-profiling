@@ -37,12 +37,12 @@ public class GDPRAspect {
       return responseDto; // not my class
     }
 
-    String userRole = fetchUserRole(); // API call
 
     List<Field> sensitiveFields = getAnnotatedFields(responseDto, VisibleFor.class);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // no fields annotated
     }
+    String userRole = fetchUserRole(); // API call
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 

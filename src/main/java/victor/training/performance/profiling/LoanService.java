@@ -19,7 +19,6 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoanService {
   private final LoanRepo loanRepo;
@@ -29,7 +28,7 @@ public class LoanService {
     var comments = commentsApiClient.fetchComments(loanId);
     Loan loan = loanRepo.findByIdLoadingSteps(loanId);
     LoanDto dto = new LoanDto(loan, comments);
-    log.trace("Return loan: " + loan);
+    log.trace("Return loan: {}", loan);
     return dto;
   }
 
@@ -46,10 +45,12 @@ public class LoanService {
   @PostConstruct
   public void atStartup() {
     // TODO register a gauge metric that tracks the size of the recentLoanIds list in real-time
+    meterRegistry.gauge("recent_loan_ids_size", recentLoanIds, longs -> longs.size());
   }
 
   public synchronized Status getLoanStatus(Long loanId) {
     // TODO register a counter metric that counts how many times the status of a loan is requested, with a tag for the loanId
+    meterRegistry.counter("loan_status_requests", "loanId", loanId.toString()).increment();
 
     Loan loan = loanRepo.findById(loanId).orElseThrow();
 

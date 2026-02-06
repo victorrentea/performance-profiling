@@ -2,14 +2,17 @@ package victor.training.performance.profiling.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
-//@Getter @Setter
+//@Data // generates @HashCodeEquals and @ToString on ALL FIELDS
+@Getter
+@Setter
 public class Loan {
   @Id
   private Long id;
