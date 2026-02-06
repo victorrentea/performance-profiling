@@ -21,12 +21,7 @@ public class FileAppend {
   static int N_THREADS = 4;
 
   public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
-    System.out.println("Starting async-profiler on this process...");
-    long pid = ProcessHandle.current().pid();
-    String asprofCmd = System.getProperty("user.home") + "/workspace/async-profiler/bin/asprof -d 30 -f flamegraph.html " + pid;
-    new ProcessBuilder("sh", "-c", asprofCmd)
-        .inheritIO()
-        .start();
+    attachAsyncProfiler();
     Thread.sleep(200);
 
     System.out.println("Start writing file...");
@@ -45,6 +40,15 @@ public class FileAppend {
         Files.size(p) / 1024 + " KB, of hash: " + FileHashUtil.computeShortHash(p));
 
     System.out.println("Flamegraph: file://" + Path.of("flamegraph.html").toAbsolutePath());
+  }
+
+  private static void attachAsyncProfiler() throws IOException {
+    System.out.println("Starting async-profiler on this process...");
+    long pid = ProcessHandle.current().pid();
+    String asprofCmd = System.getProperty("user.home") + "/workspace/async-profiler/bin/asprof -d 30 -f flamegraph.html " + pid;
+    new ProcessBuilder("sh", "-c", asprofCmd)
+        .inheritIO()
+        .start();
   }
 
   static int c = 0;
