@@ -34,12 +34,12 @@ public class GDPRAspect {
       return null;
     }
     if (!responseDto.getClass().getPackageName().startsWith("victor")) {
-      return responseDto; // not of my app
+      return responseDto; // not my class
     }
 
-    String userRole = fetchUserRole(); // network call
+    String userRole = fetchUserRole(); // API call
 
-    List<Field> sensitiveFields = getAnnotatedFields(responseDto);
+    List<Field> sensitiveFields = getAnnotatedFields(responseDto, VisibleFor.class);
     if (!sensitiveFields.isEmpty()) {
       clearSensitiveFields(responseDto, userRole, sensitiveFields);
     }
@@ -64,12 +64,12 @@ public class GDPRAspect {
     }
   }
 
-  private static List<Field> getAnnotatedFields(Object result) {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static List<Field> getAnnotatedFields(Object result, Class annotation) {
     List<Field> annotatedFields = new ArrayList<>();
     for (Field field : result.getClass().getDeclaredFields()) {
       field.setAccessible(true);
-      VisibleFor annot = field.getAnnotation(VisibleFor.class);
-      if (annot != null) {
+      if (field.getAnnotation(annotation) != null) {
         annotatedFields.add(field);
       }
     }
