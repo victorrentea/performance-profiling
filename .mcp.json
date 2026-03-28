@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "grafana": {
+      "command": "npx",
+      "args": ["-y", "mcp-grafana"],
+      "env": {
+        "GRAFANA_URL": "http://localhost:3001",
+        "GRAFANA_API_KEY": ""
+      }
+    }
+  }
+}
