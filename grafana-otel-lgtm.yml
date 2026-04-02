@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
-  grafana-otel: # login to http://localhost:3000 using admin:admin
-    # instrument both projects VM options:
+  grafana-otel:
+    # instrument both projects by VM options:
     # -javaagent:/Users/victorrentea/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500
 
     # ⚠️add to SecondApp -Dspring.application.name=second
@@ -12,3 +10,4 @@ services:
       - "3001:3000"
       - "4317:4317"
       - "4318:4318"
+      # login to http://localhost:3000 using admin:admin

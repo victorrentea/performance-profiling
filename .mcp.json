@@ -1,11 +1,12 @@
 {
   "mcpServers": {
-    "grafana": {
-      "command": "npx",
-      "args": ["-y", "mcp-grafana"],
+    "grafana-local": {
+      "command": "/Users/victorrentea/go/bin/mcp-grafana",
+      "args": [],
       "env": {
         "GRAFANA_URL": "http://localhost:3001",
-        "GRAFANA_API_KEY": ""
+        "GRAFANA_USERNAME": "admin",
+        "GRAFANA_PASSWORD": "admin"
       }
     }
   }

@@ -9,5 +9,4 @@ public interface LoanRepo extends JpaRepository<Loan, Long> {
   @Query("SELECT la FROM Loan la LEFT JOIN FETCH la.steps")
   @Observed
   Loan findByIdLoadingSteps(Long id);
-
 }
