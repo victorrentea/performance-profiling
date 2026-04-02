@@ -8,7 +8,7 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.IntStream.range;
 
-// ⚠️ Microbenchmark sub-ms code using Java Measuring Harness (JMH)
+// ⚠️ Microbenchmark sub-ms code ONLY using Java Measuring Harness (JMH)
 @TestMethodOrder(MethodName.class)
 public class HotMethodTest {
   Set<Integer> hashSet = range(0, 100_000).boxed().collect(toSet());
@@ -24,6 +24,7 @@ public class HotMethodTest {
 
     hashSet.removeAll(list);
   }
+
 
   @Test
   void c_slow_100k() {
