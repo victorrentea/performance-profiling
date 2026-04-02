@@ -7,7 +7,13 @@
       "mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_pages",
       "Bash(go version:*)",
       "Bash(brew install:*)",
-      "Bash(go install:*)"
+      "Bash(go install:*)",
+      "Bash(mdfind \"kMDItemFSName == ''''jmc''''\")",
+      "Read(//Library/Java/JavaVirtualMachines/**)",
+      "Read(//Applications/**)",
+      "Read(//Users/victorrentea/Applications/**)",
+      "Bash(\"/Applications/JDK Mission Control.app/Contents/MacOS/jmc\" --help)",
+      "Bash(\"/Applications/JDK Mission Control.app/Contents/MacOS/jmc\" analyze)"
     ]
   },
   "enableAllProjectMcpServers": true
