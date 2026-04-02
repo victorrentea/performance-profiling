@@ -122,6 +122,15 @@ data = json.load(sys.stdin)
 events = data['recording']['events']
 ```
 
+## Practical Tips
+
+- **Write Python to a temp file** instead of inline f-strings in bash: bash escaping of quotes inside f-strings inside single-quoted heredocs is fragile. Write a `/tmp/jfr_analyze.py` and call it with arguments.
+- Use `dict` keys like `'cnt'`, `'tot'`, `'mx'` instead of `'count'`, `'total'`, `'max'` to avoid shadowing Python builtins.
+- Also check `jdk.ObjectAllocationSample` (newer JDKs use this instead of `ObjectAllocationInNewTLAB`).
+- Also check `jdk.ThreadSleep` — long sleeps on app threads are suspicious.
+- `jdk.JavaMonitorWait` is different from `jdk.JavaMonitorEnter`: Wait = `Object.wait()` (voluntary), Enter = blocked trying to acquire a `synchronized` lock (contention).
+- Socket reads on `RMI TCP Connection` threads are JMX/IntelliJ profiler noise — filter them out when reporting I/O issues.
+
 ## Notes
 
 - The `jfr` CLI is part of the JDK, no separate install needed
