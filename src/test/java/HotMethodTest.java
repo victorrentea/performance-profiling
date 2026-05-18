@@ -30,6 +30,7 @@ public class HotMethodTest {
   void c_slow_100k() {
     List<Integer> list = range(0, 100_000).boxed().toList();
 
-    hashSet.removeAll(list);
+//    hashSet.removeAll(list);
+    list.forEach(hashSet::remove);
   }
 }

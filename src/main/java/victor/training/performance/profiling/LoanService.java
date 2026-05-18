@@ -1,9 +1,12 @@
 package victor.training.performance.profiling;
 
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ThreadUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import victor.training.performance.profiling.dto.LoanDto;
@@ -12,10 +15,16 @@ import victor.training.performance.profiling.entity.Loan;
 import victor.training.performance.profiling.entity.Loan.ApprovalStep.Status;
 import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanRepo;
+import victor.training.performance.profiling.util.Sleep;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.System.currentTimeMillis;
 
 @Slf4j
 @Service
@@ -27,7 +36,21 @@ public class LoanService /*exnteds BaseService*/{
 
 //  @Transactional
   public LoanDto getLoanApplication(Long loanId) {
-    var comments = commentsApiClient.fetchComments(loanId); // 70%
+    Timer timerMetric = meterRegistry.timer("timer_metric");
+    // a) sum up parts of a flow, not all
+    // b)
+    long t0 = currentTimeMillis(); // http thread
+    CompletableFuture.runAsync(() -> {
+      System.out.println("Some bgg work");
+      Sleep.millis(100);
+      long t1 = currentTimeMillis(); // worker thread
+      timerMetric.record(t1 - t0, TimeUnit.MILLISECONDS);
+    });
+
+    var comments =
+        timerMetric.record(() ->
+            commentsApiClient.fetchComments(loanId)
+        ); // 70%
     Loan loan = loanRepo.findByIdLoadingSteps(loanId); // 30% // if i move this line above, i hurt connection pool (OSIV problem)
     LoanDto dto = new LoanDto(loan, comments);
     log.trace("Return loan: {}", loan);
@@ -47,18 +70,21 @@ public class LoanService /*exnteds BaseService*/{
 
   @PostConstruct
   public void atStartup() {
-    // TODO register a gauge metric that tracks the size of the recentLoanIds list in real-time
+    Gauge.builder("recent_loan_ids_size", recentLoanIds, LinkedHashSet::size) // pulling (callback)
+        .register(meterRegistry);
+    Gauge.builder("loans_total", loanRepo, LoanRepo::count) // +1 query : don't❌
+        .register(meterRegistry);
   }
 
-//  @Transactional
   public synchronized Status getLoanStatus(Long loanId) {
-    // TODO register a counter metric that counts how many times the status of a loan is requested, with a tag for the loanId
+    meterRegistry.counter("loan_status_requests", "loanId", loanId.toString()).increment();
 
     Loan loan = loanRepo.findById(loanId).orElseThrow();
 
     recentLoanIds.remove(loanId);
     recentLoanIds.add(loanId);
     if (recentLoanIds.size() > 10) {
+      meterRegistry.gauge("recent_loan_ids_size2", recentLoanIds.size()); // push
       recentLoanIds.removeFirst();
     }
     return loan.getCurrentStatus();
