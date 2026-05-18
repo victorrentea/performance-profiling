@@ -19,22 +19,24 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
+//@Transactional // NEVER here! DANGEROUS ☢️☢️☢️☢️ as only a fraction of methods WRITE (most read)
 @RequiredArgsConstructor
-public class LoanService {
+public class LoanService /*exnteds BaseService*/{
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
 
+//  @Transactional
   public LoanDto getLoanApplication(Long loanId) {
-    var comments = commentsApiClient.fetchComments(loanId);
-    Loan loan = loanRepo.findByIdLoadingSteps(loanId);
+    var comments = commentsApiClient.fetchComments(loanId); // 70%
+    Loan loan = loanRepo.findByIdLoadingSteps(loanId); // 30%
     LoanDto dto = new LoanDto(loan, comments);
-    log.trace("Return loan: " + loan);
+    log.trace("Return loan: {}", loan);
     return dto;
   }
 
   private final AuditRepo auditRepo;
 
+  @Transactional
   public void saveLoanApplication(String title) {
     Long id = loanRepo.save(new Loan().setTitle(title)).getId();
     auditRepo.save(new Audit("Loan created: " + id));
@@ -48,6 +50,7 @@ public class LoanService {
     // TODO register a gauge metric that tracks the size of the recentLoanIds list in real-time
   }
 
+//  @Transactional
   public synchronized Status getLoanStatus(Long loanId) {
     // TODO register a counter metric that counts how many times the status of a loan is requested, with a tag for the loanId
 

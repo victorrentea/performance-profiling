@@ -37,12 +37,14 @@ public class GDPRAspect {
       return responseDto; // not my class
     }
 
-    String userRole = fetchUserRole(); // API call
-
     List<Field> sensitiveFields = getAnnotatedFields(responseDto, VisibleFor.class);
     if (sensitiveFields.isEmpty()) {
       return responseDto; // no fields annotated
     }
+
+    String userRole = fetchUserRole(); // API call
+    // in 2026 we get the current user role from IAM/user role service using a cache return me < 10ms.........
+    // from JWT tokens we can validate offline
 
     clearSensitiveFields(responseDto, userRole, sensitiveFields);
 

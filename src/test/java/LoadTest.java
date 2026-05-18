@@ -17,7 +17,7 @@ public class LoadTest extends Simulation {
         // 1) Closed World (easier): N parallel threads firing requests in a loop => max N concurrent requests at any time
         .injectClosed(constantConcurrentUsers(23).during(ofSeconds(8))))
         // 2) Open World: N requests / second => closer to a www userbase: higher latency => higher concurrency
-        // .injectOpen(constantUsersPerSec(200f).during(ofSeconds(8))))
+//         .injectOpen(constantUsersPerSec(200f).during(ofSeconds(8))))
 
         // To convert ~= closedworld.threads/endpoint_latency = 23/100ms = 230rps (eg)
         .protocols(http.baseUrl("http://localhost:8080"))
