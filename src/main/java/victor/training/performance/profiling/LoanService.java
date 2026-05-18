@@ -28,7 +28,7 @@ public class LoanService /*exnteds BaseService*/{
 //  @Transactional
   public LoanDto getLoanApplication(Long loanId) {
     var comments = commentsApiClient.fetchComments(loanId); // 70%
-    Loan loan = loanRepo.findByIdLoadingSteps(loanId); // 30%
+    Loan loan = loanRepo.findByIdLoadingSteps(loanId); // 30% // if i move this line above, i hurt connection pool (OSIV problem)
     LoanDto dto = new LoanDto(loan, comments);
     log.trace("Return loan: {}", loan);
     return dto;
