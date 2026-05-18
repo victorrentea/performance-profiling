@@ -49,6 +49,23 @@ Glowroot is a lightweight Java Agent for performance metrics and profiling.
 - Observe: time spent acquiring connection from pool
 - Remove `feign.httpclient.max-connections-per-route` from `application.properties`
 
+## Bonus: JFR vs async-profiler (kernel-level cliff)
+
+A port of Andrei Pangin's [demo3](https://github.com/apangin/java-profiling-presentation):
+reading a file with a 32 MB buffer is dramatically slower than with a 31 MB
+buffer because glibc routes ≥ 32 MB allocations through `mmap`, faulting fresh
+zero pages on every read. JFR is blind (both runs show only `FileInputStream.read`);
+async-profiler reveals the native frames.
+
+- Source: [`BufferSizeDemo.java`](src/main/java/victor/training/performance/profiling/BufferSizeDemo.java) — plain `main()`, no Spring
+- Run locally (macOS): click ▶️ on `main` — but the cliff is muted (different allocator)
+- Reproduce the real cliff: start Docker Desktop, then
+  ```
+  ./docker/buffer-demo/run.sh
+  ```
+  Produces `out/buffer-demo.jfr`, `out/flame-31mb.html`, `out/flame-32mb.html`.
+  Open the two flamegraphs side-by-side.
+
 ## Optional: OpenTelemetry Instrumentation
 
 Requires local Docker.

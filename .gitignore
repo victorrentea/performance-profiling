@@ -44,3 +44,6 @@ glowroot.jar
 opentelemetry-javaagent.jar
 capture/
 /flamegraph.html
+
+# buffer-demo generated artifacts
+out/
