@@ -71,12 +71,27 @@ async-profiler reveals the native frames.
 Requires local Docker.
 
 1. Start monitoring: `docker-compose -f grafana-otel-lgtm.yml up`
-2. Download OTEL agent: [opentelemetry-java-instrumentation releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
-3. Add to VM options:
+2. Download the OTel Java agent jar — easiest is to grab it from the
+   [`docker-otel-lgtm`](https://github.com/grafana/docker-otel-lgtm) kit so
+   the pre-wired run configs (see below) resolve out of the box:
+   ```bash
+   cd ~/Downloads
+   curl -L -o docker-otel-lgtm-main.zip \
+     https://github.com/grafana/docker-otel-lgtm/archive/refs/heads/main.zip
+   unzip docker-otel-lgtm-main.zip
+   ls docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar
    ```
-   -javaagent:/path/to/opentelemetry-javaagent.jar
+   (Or download from
+   [opentelemetry-java-instrumentation releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
+   and adjust the VM args.)
+3. Use the **ProfiledApp** and **SecondApp** run configs (shared, in
+   `.idea/runConfigurations/`). They already include:
+   ```
+   -javaagent:$USER_HOME$/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar
    -Dotel.instrumentation.micrometer.enabled=true
    -Dotel.metric.export.interval=500
    -Dotel.bsp.schedule.delay=500
    ```
+   The agent is what propagates trace context across `CompletableFuture` /
+   `ForkJoinPool` worker threads — no `InheritableThreadLocal` involved.
 4. Import Grafana dashboard: https://grafana.com/grafana/dashboards/19004-spring-boot-statistics/

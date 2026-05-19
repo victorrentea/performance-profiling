@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+  <!--
+    Profiled Spring Boot app, attached to the OpenTelemetry Java agent.
+    The agent (bytecode instrumentation) is what propagates trace context
+    across CompletableFuture / ForkJoinPool worker threads.
+
+    Prerequisite: download opentelemetry-javaagent-v2.1.0.jar from the
+    docker-otel-lgtm kit (see README.md) so the -javaagent path resolves.
+
+    To ALSO attach Glowroot for the side-by-side profiling demo, prepend
+    this to VM_PARAMETERS (requires a local Glowroot install at ../glowroot/):
+      -javaagent:$PROJECT_DIR$/../glowroot/glowroot.jar
+  -->
+  <configuration name="ProfiledApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="performance-profiling" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="victor.training.performance.profiling.ProfiledApp" />
+    <option name="VM_PARAMETERS" value="-javaagent:$USER_HOME$/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.resource.attributes=service.instance.id=profiling-1 -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500 -Dotel.metrics.exemplar.filter=trace_based -Dotel.experimental.metrics.view.config=$PROJECT_DIR$/otel-views.yaml" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="victor.training.performance.profiling.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

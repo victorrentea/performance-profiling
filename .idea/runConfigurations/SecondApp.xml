@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <!--
+    Second Spring Boot app used as a downstream service in the demos
+    (e.g. /loan-comments). Also attached to the OpenTelemetry Java agent
+    so traces stitch across the two JVMs.
+
+    Prerequisite: download opentelemetry-javaagent-v2.1.0.jar from the
+    docker-otel-lgtm kit (see README.md).
+  -->
+  <configuration name="SecondApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="performance-profiling" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="victor.training.performance.helper.SecondApp" />
+    <option name="VM_PARAMETERS" value="-Dspring.application.name=second -javaagent:$USER_HOME$/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.resource.attributes=service.instance.id=second-1 -Dotel.bsp.schedule.delay=500" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="victor.training.performance.helper.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
