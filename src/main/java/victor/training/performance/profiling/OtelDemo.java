@@ -5,6 +5,7 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -53,17 +54,7 @@ public class OtelDemo {
       }
     }, executor);
 
-    var spanFind = GlobalOpenTelemetry.getTracer("profiling.app")
-        .spanBuilder("fetch.loanApplication")
-        .setParent(Context.current()) // Set parent context explicitly
-        .startSpan();
-    Loan loanApplication;
-    try (Scope ignored = spanFind.makeCurrent()) {
-      log.info("Before loan fetch");
-      loanApplication = loanApplicationRepo.findByIdLoadingSteps(loanId);
-    } finally {
-      spanFind.end();
-    }
+    Loan loanApplication = fetchLoanApplication(loanId);
 
     CompletableFuture.runAsync(() -> {
       var backgroundSpan = GlobalOpenTelemetry.getTracer("profiling.app")
@@ -83,5 +74,14 @@ public class OtelDemo {
     var dto = new LoanDto(loanApplication, comments);
     log.trace("End");
     return dto;
+  }
+
+  // Bytecode-instrumented by the OTel agent — works even though it's private and self-invoked.
+  // Span parent is taken from Context.current() of the calling thread,
+  // so the JDBC/Hibernate child spans nest correctly under "fetch.loanApplication".
+  @WithSpan("fetch.loanApplication")
+  private Loan fetchLoanApplication(Long loanId) {
+    log.info("Before loan fetch");
+    return loanApplicationRepo.findByIdLoadingSteps(loanId);
   }
 }
