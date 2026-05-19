@@ -41,7 +41,7 @@ public class LoanService /*exnteds BaseService*/{
     // b)
     long t0 = currentTimeMillis(); // http thread
     CompletableFuture.runAsync(() -> {
-      System.out.println("Some bgg work");
+      System.out.println("Some bg work");
       Sleep.millis(100);
       long t1 = currentTimeMillis(); // worker thread
       timerMetric.record(t1 - t0, TimeUnit.MILLISECONDS);

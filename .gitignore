@@ -47,3 +47,4 @@ capture/
 
 # buffer-demo generated artifacts
 out/
+/.playwright-mcp/

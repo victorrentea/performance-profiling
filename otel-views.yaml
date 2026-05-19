@@ -1,0 +1,26 @@
+# OpenTelemetry SDK metric views.
+# Loaded by the OTel Java agent when you pass:
+#   -Dotel.experimental.metrics.view.config=/abs/path/to/otel-views.yaml
+#
+# Replaces the default 15-bucket HTTP duration histogram with 5 boundaries:
+#   <= 50 ms  | <= 200 ms | <= 500 ms | <= 1 s | <= 5 s | (+Inf)
+# Server side (your endpoints) and client side (outbound HTTP/Feign calls).
+
+- selector:
+    instrument_name: http.server.request.duration
+  view:
+    aggregation: explicit_bucket_histogram
+    aggregation_args:
+      bucket_boundaries: [0.05, 0.2, 0.5, 1.0, 5.0]
+    # Keep only stable, low-cardinality dimensions. Without this, OTel attaches
+    # network_peer_port / user_agent_original / client_address per request,
+    # creating thousands of one-sample series → rate() returns NaN.
+    attribute_keys: [http.route, http.request.method, http.response.status_code, service.name]
+
+- selector:
+    instrument_name: http.client.request.duration
+  view:
+    aggregation: explicit_bucket_histogram
+    aggregation_args:
+      bucket_boundaries: [0.05, 0.2, 0.5, 1.0, 5.0]
+    attribute_keys: [http.route, http.request.method, http.response.status_code, server.address, service.name]
