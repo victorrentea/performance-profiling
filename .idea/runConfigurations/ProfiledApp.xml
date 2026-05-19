@@ -15,7 +15,7 @@
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="performance-profiling" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="victor.training.performance.profiling.ProfiledApp" />
-    <option name="VM_PARAMETERS" value="-javaagent:$USER_HOME$/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.resource.attributes=service.instance.id=profiling-1 -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500 -Dotel.metrics.exemplar.filter=trace_based -Dotel.experimental.metrics.view.config=$PROJECT_DIR$/otel-views.yaml" />
+    <option name="VM_PARAMETERS" value="-javaagent:$USER_HOME$/Downloads/docker-otel-lgtm-main/examples/java/opentelemetry-javaagent-v2.1.0.jar -Dotel.resource.attributes=service.instance.id=profiling-1 -Dotel.instrumentation.micrometer.enabled=true -Dotel.metric.export.interval=500 -Dotel.bsp.schedule.delay=500 -Dotel.metrics.exemplar.filter=trace_based -Dotel.experimental.metrics.view.config=$PROJECT_DIR$/otel-views.yaml -Dotel.instrumentation.logback-appender.enabled=false" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="victor.training.performance.profiling.*" />

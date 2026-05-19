@@ -73,6 +73,14 @@
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
             <version>2.1.0</version>
         </dependency>
+        <dependency>
+            <!-- Logback → OTel log bridge. Explicit wiring in logback-spring.xml
+                 survives Spring Boot's logback reconfiguration, which silently
+                 drops the agent's auto-installed appender. -->
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+            <version>2.1.0-alpha</version>
+        </dependency>
 
 
         <dependency>
