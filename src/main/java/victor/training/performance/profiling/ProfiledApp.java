@@ -19,6 +19,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -26,6 +27,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -39,6 +41,21 @@ public class ProfiledApp implements WebMvcConfigurer {
 
   public static void main(String[] args) throws IOException {
     SpringApplication.run(ProfiledApp.class, args);
+  }
+
+
+
+  @Bean
+  public ThreadPoolTaskExecutor taskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setThreadFactory(Thread.ofVirtual().factory());
+    executor.setCorePoolSize(20);
+    executor.setMaxPoolSize(20);
+    executor.setQueueCapacity(500);
+    executor.setThreadNamePrefix("worker-");
+    executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+    executor.initialize();
+    return executor;
   }
 
   @Bean // instrumented by micrometer-tracing

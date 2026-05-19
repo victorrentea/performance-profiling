@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import victor.training.performance.profiling.dto.CommentDto;
@@ -32,6 +33,7 @@ import static java.lang.System.currentTimeMillis;
 public class LoanService /*exnteds BaseService*/ {
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
+  private final ThreadPoolTaskExecutor taskExecutor;
 
   //  @Transactional
   public LoanDto getLoanApplication(Long loanId) {
@@ -46,20 +48,36 @@ public class LoanService /*exnteds BaseService*/ {
       timerMetric.record(t1 - t0, TimeUnit.MILLISECONDS);
     });
 
-    var commentsCF = CompletableFuture.supplyAsync(()->
-        commentsApiClient.fetchComments(loanId));
+    var commentsCF = CompletableFuture.supplyAsync(
+        ()->commentsApiClient.fetchComments(loanId), taskExecutor);
 
-    var loanCF = CompletableFuture.supplyAsync(()->
-        loanRepo.findByIdLoadingSteps(loanId));
+    var loan = myMethod(loanId);
+    // #1🤔 On what thread pool does the work run now?
+    //  => run ForkJoinPool.commonPool()
+    //      .maxThreads = #CPU-1
+    //      .waitingQueue in memory maxSize=INFINTE
+    // ☢️ competing with any parallelStream in this JVM.
+    // ❌ don't do I/O work on commonPool()
+    // 😊 otel javaagent copied the traceid from parent thread to workerthreads
+    // #2 I only actually need 1 extra thread
+    // #3☢️ DOS risk: 😈 sends 1k request in one burst: fire many rps but close the conn
+    //   if the 😈 waits for its requests to compelte => 200 max running => 3 in execution on FJP.commonPool + 197 in its q
 
-    Loan loan = loanCF.join();
+
+    // by default Tomcat
+    //    start 200 max threads
+    //    respond with 503 if already having 500 connections
+
     List<CommentDto> comments = commentsCF.join();
     LoanDto dto = new LoanDto(loan, comments);
     log.trace("Return loan: {}", loan);
     return dto;
   }
 
-
+  private Loan myMethod(Long loanId) {
+    log.info("ON another thread");
+    return loanRepo.findByIdLoadingSteps(loanId);
+  }
 
 
   private final AuditRepo auditRepo;
