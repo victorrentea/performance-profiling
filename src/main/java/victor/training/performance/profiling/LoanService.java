@@ -6,9 +6,9 @@ import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ThreadUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import victor.training.performance.profiling.dto.CommentDto;
 import victor.training.performance.profiling.dto.LoanDto;
 import victor.training.performance.profiling.entity.Audit;
 import victor.training.performance.profiling.entity.Loan;
@@ -17,7 +17,6 @@ import victor.training.performance.profiling.repo.AuditRepo;
 import victor.training.performance.profiling.repo.LoanRepo;
 import victor.training.performance.profiling.util.Sleep;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,11 +29,11 @@ import static java.lang.System.currentTimeMillis;
 @Service
 //@Transactional // NEVER here! DANGEROUS ☢️☢️☢️☢️ as only a fraction of methods WRITE (most read)
 @RequiredArgsConstructor
-public class LoanService /*exnteds BaseService*/{
+public class LoanService /*exnteds BaseService*/ {
   private final LoanRepo loanRepo;
   private final CommentsApiClient commentsApiClient;
 
-//  @Transactional
+  //  @Transactional
   public LoanDto getLoanApplication(Long loanId) {
     Timer timerMetric = meterRegistry.timer("timer_metric");
     // a) sum up parts of a flow, not all
@@ -47,15 +46,21 @@ public class LoanService /*exnteds BaseService*/{
       timerMetric.record(t1 - t0, TimeUnit.MILLISECONDS);
     });
 
-    var comments =
-        timerMetric.record(() ->
-            commentsApiClient.fetchComments(loanId)
-        ); // 70%
-    Loan loan = loanRepo.findByIdLoadingSteps(loanId); // 30% // if i move this line above, i hurt connection pool (OSIV problem)
+    var commentsCF = CompletableFuture.supplyAsync(()->
+        commentsApiClient.fetchComments(loanId));
+
+    var loanCF = CompletableFuture.supplyAsync(()->
+        loanRepo.findByIdLoadingSteps(loanId));
+
+    Loan loan = loanCF.join();
+    List<CommentDto> comments = commentsCF.join();
     LoanDto dto = new LoanDto(loan, comments);
     log.trace("Return loan: {}", loan);
     return dto;
   }
+
+
+
 
   private final AuditRepo auditRepo;
 
