@@ -49,7 +49,7 @@ public class LoanService /*exnteds BaseService*/ {
     });
 
     var commentsCF = CompletableFuture.supplyAsync(
-        ()->commentsApiClient.fetchComments(loanId), taskExecutor);
+        () -> commentsApiClient.fetchComments(loanId), taskExecutor);
 
     var loan = myMethod(loanId);
     // #1🤔 On what thread pool does the work run now?
@@ -88,6 +88,11 @@ public class LoanService /*exnteds BaseService*/ {
     auditRepo.save(new Audit("Loan created: " + id));
   }
 
+  //  private final AtomicReference<guava.ImmutableSet<Long>> recentLoanIds = new LinkedHashSet<>();
+  // CopyOnWriteArrayList
+  // Concurrent...
+  // synchronizedSet(
+  // ReentrantLock
   private final LinkedHashSet<Long> recentLoanIds = new LinkedHashSet<>();
   private final MeterRegistry meterRegistry;
 
@@ -99,22 +104,44 @@ public class LoanService /*exnteds BaseService*/ {
         .register(meterRegistry);
   }
 
-  public synchronized Status getLoanStatus(Long loanId) {
-    meterRegistry.counter("loan_status_requests", "loanId", loanId.toString()).increment();
+  public void method() {
+//    while(true);
+    int sum = 0;
+    for (int i = 0; i < 1000000000; i++) {
+      sum += i * i * i * i;
 
+    }
+  }
+
+  public Status getLoanStatus(Long loanId) {
+    meterRegistry.counter("loan_status_requests", "loanId", loanId.toString()).increment();
     Loan loan = loanRepo.findById(loanId).orElseThrow();
 
-    recentLoanIds.remove(loanId);
-    recentLoanIds.add(loanId);
-    if (recentLoanIds.size() > 10) {
-      meterRegistry.gauge("recent_loan_ids_size2", recentLoanIds.size()); // push
-      recentLoanIds.removeFirst();
+    var jfrEvent = new LoanLookupEvent();
+    if (jfrEvent.isEnabled()) {
+      jfrEvent.loanId = loanId;
+      jfrEvent.status = loan.getCurrentStatus().name();
+      jfrEvent.commit();
+    }
+
+    // SELECT FOR UPDATE
+    // redis lock/semaphore
+    synchronized (recentLoanIds) { // keep as little code as possible in the critical sections protected by locks
+      recentLoanIds.remove(loanId);
+      recentLoanIds.add(loanId);
+      if (recentLoanIds.size() > 10) {
+        meterRegistry.gauge("recent_loan_ids_size2", recentLoanIds.size()); // push
+        recentLoanIds.removeFirst();
+      }
     }
     return loan.getCurrentStatus();
   }
 
-  public synchronized List<Long> getRecentLoanIds() {
-    return new ArrayList<>(recentLoanIds);
+  public  List<Long> getRecentLoanIds() {
+    synchronized (recentLoanIds) {
+      return new ArrayList<>(recentLoanIds);
+//      return recentLoanIds;
+    }
   }
 }
 
