@@ -44,3 +44,6 @@ glowroot.jar
 opentelemetry-javaagent.jar
 capture/
 /flamegraph.html
+
+# Playwright MCP screenshots — keep local-only
+/.playwright-mcp/
