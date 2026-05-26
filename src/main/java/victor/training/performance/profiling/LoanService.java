@@ -127,12 +127,12 @@ public class LoanService /*exnteds BaseService*/ {
     // SELECT FOR UPDATE
     // redis lock/semaphore
     synchronized (recentLoanIds) { // keep as little code as possible in the critical sections protected by locks
-      recentLoanIds.remove(loanId);
-      recentLoanIds.add(loanId);
-      if (recentLoanIds.size() > 10) {
-        meterRegistry.gauge("recent_loan_ids_size2", recentLoanIds.size()); // push
-        recentLoanIds.removeFirst();
-      }
+//      recentLoanIds.remove(loanId);
+//      recentLoanIds.add(loanId);
+//      if (recentLoanIds.size() > 10) {
+//        meterRegistry.gauge("recent_loan_ids_size2", recentLoanIds.size()); // push
+//        recentLoanIds.removeFirst();
+//      }
     }
     return loan.getCurrentStatus();
   }

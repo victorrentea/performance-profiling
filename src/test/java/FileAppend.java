@@ -31,9 +31,9 @@ public class FileAppend {
     List<Callable<String>> tasks = IntStream.range(0, N_THREADS)
         .mapToObj(FileAppend::work)
         .toList();
-    try (var executor = Executors.newCachedThreadPool()) {
-      executor.invokeAll(tasks);
-    }
+//    try (var executor = Executors.newCachedThreadPool()) {
+//      executor.invokeAll(tasks);
+//    }
     long t1 = currentTimeMillis();
 
     System.out.println("Took " + (t1 - t0) / 1000f + " s to write a file of size " +

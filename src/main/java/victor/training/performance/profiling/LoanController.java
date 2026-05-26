@@ -36,6 +36,7 @@ public class LoanController {
     loanService.saveLoanApplication(title);
   }
 
+//  @RateLimiter("") // resilience 4j
   @GetMapping("loan/{id}/status")
   public Loan.ApprovalStep.Status getStatus(@PathVariable Long id) {
     Timer timer = Timer.builder("get_loan_status")

@@ -48,7 +48,7 @@ public class ProfiledApp implements WebMvcConfigurer {
   @Bean
   public ThreadPoolTaskExecutor taskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setThreadFactory(Thread.ofVirtual().factory());
+//    executor.setThreadFactory(Thread.ofVirtual().factory());
     executor.setCorePoolSize(20);
     executor.setMaxPoolSize(20);
     executor.setQueueCapacity(500);
